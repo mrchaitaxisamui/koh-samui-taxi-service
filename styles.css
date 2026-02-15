@@ -586,6 +586,37 @@ a {
     margin-bottom: 32px;
 }
 
+.cta-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    align-items: center;
+}
+
+.cta-buttons .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-whatsapp {
+    background: #25D366;
+    color: var(--color-white);
+    padding: 18px 40px;
+    font-size: 18px;
+    border-radius: var(--radius-lg);
+}
+
+.btn-whatsapp:hover {
+    background: #20bd5a;
+}
+
+.whatsapp-icon {
+    width: 22px;
+    height: 22px;
+}
+
 /* ============================================
    Footer
    ============================================ */
