@@ -297,6 +297,10 @@ a {
     margin-bottom: 16px;
 }
 
+.booking-form .btn + .btn {
+    margin-top: 12px;
+}
+
 .form-field {
     position: relative;
     margin-bottom: 12px;
