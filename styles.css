@@ -297,8 +297,10 @@ a {
     margin-bottom: 16px;
 }
 
-.booking-form .btn + .btn {
-    margin-top: 12px;
+.booking-form-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .form-field {
