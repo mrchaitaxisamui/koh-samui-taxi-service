@@ -19,17 +19,20 @@
                     <img src="Mrchai-logo.svg" alt="Mr Chai" class="logo-icon">
                     <span>Mr Chai</span>
                 </a>
-                <div class="nav-links">
+                <div class="nav-links" id="nav-menu">
                     <a href="#ride" class="nav-link">Ride</a>
                     <a href="#about" class="nav-link">About</a>
                     <a href="#contact" class="nav-link">Contact</a>
+                    <div class="nav-menu-cta">
+                        <a href="tel:+66824245439" class="btn btn-primary btn-full">Book Now</a>
+                    </div>
                 </div>
             </div>
             <div class="nav-right">
-                <a href="tel:+66824245439" class="btn btn-text">+66 82 424 5439</a>
-                <a href="tel:+66824245439" class="btn btn-primary">Book Now</a>
+                <a href="tel:+66824245439" class="nav-phone btn btn-text" aria-label="Call us">+66 82 424 5439</a>
+                <a href="tel:+66824245439" class="nav-book-desktop btn btn-primary">Book Now</a>
             </div>
-            <button class="menu-toggle" aria-label="Menu">
+            <button class="menu-toggle" aria-label="Menu" aria-expanded="false" aria-controls="nav-menu">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -93,33 +96,94 @@
                 <article class="dest-card">
                     <div class="dest-card-bg" style="background-image: url('https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800&q=80');" role="img" aria-label="Fisherman Village"></div>
                     <div class="dest-card-overlay" aria-hidden="true"></div>
-                    <h3 class="dest-card-title">Fisherman Village</h3>
+                    <div class="dest-card-content">
+                        <span class="dest-card-subheading">Bophut</span>
+                        <h3 class="dest-card-title">Fisherman Village</h3>
+                    </div>
                 </article>
                 <article class="dest-card">
-                    <div class="dest-card-bg" style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80');" role="img" aria-label="Chaweng Beach"></div>
+                    <div class="dest-card-bg" style="background-image: url('https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800&q=80');" role="img" aria-label="Elephant Sanctuary"></div>
                     <div class="dest-card-overlay" aria-hidden="true"></div>
-                    <h3 class="dest-card-title">Chaweng Beach</h3>
+                    <div class="dest-card-content">
+                        <span class="dest-card-subheading">Lipa Noi</span>
+                        <h3 class="dest-card-title">Elephant Sanctuary</h3>
+                    </div>
                 </article>
                 <article class="dest-card">
-                    <div class="dest-card-bg" style="background-image: url('https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800&q=80');" role="img" aria-label="Lamai Beach"></div>
+                    <div class="dest-card-bg" style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80');" role="img" aria-label="Pig Island"></div>
                     <div class="dest-card-overlay" aria-hidden="true"></div>
-                    <h3 class="dest-card-title">Lamai Beach</h3>
+                    <div class="dest-card-content">
+                        <span class="dest-card-subheading">Lipa Noi</span>
+                        <h3 class="dest-card-title">Pig Island</h3>
+                    </div>
                 </article>
                 <article class="dest-card">
                     <div class="dest-card-bg" style="background-image: url('https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80');" role="img" aria-label="Big Buddha"></div>
                     <div class="dest-card-overlay" aria-hidden="true"></div>
-                    <h3 class="dest-card-title">Big Buddha</h3>
+                    <div class="dest-card-content">
+                        <span class="dest-card-subheading">Chong Mon</span>
+                        <h3 class="dest-card-title">Big Buddha</h3>
+                    </div>
                 </article>
                 <article class="dest-card">
                     <div class="dest-card-bg" style="background-image: url('https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=800&q=80');" role="img" aria-label="Ang Thong Marine Park"></div>
                     <div class="dest-card-overlay" aria-hidden="true"></div>
-                    <h3 class="dest-card-title">Ang Thong Marine Park</h3>
+                    <div class="dest-card-content">
+                        <span class="dest-card-subheading">Nathon</span>
+                        <h3 class="dest-card-title">Ang Thong Marine Park</h3>
+                    </div>
                 </article>
                 <article class="dest-card">
                     <div class="dest-card-bg" style="background-image: url('https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=800&q=80');" role="img" aria-label="Na Muang Waterfall"></div>
                     <div class="dest-card-overlay" aria-hidden="true"></div>
-                    <h3 class="dest-card-title">Na Muang Waterfall</h3>
+                    <div class="dest-card-content">
+                        <span class="dest-card-subheading">Lipa Noi</span>
+                        <h3 class="dest-card-title">Na Muang Waterfall</h3>
+                    </div>
                 </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="rates" class="rates-section">
+        <div class="section-container">
+            <h2 class="section-title" id="rates-heading">Rates from Lipa Noi</h2>
+            <p class="section-subtitle" id="rates-subtitle">Transparent, upfront pricing. Choose where you're going from and to—rates update automatically.</p>
+
+            <div class="rates-selectors">
+                <label class="rate-select-wrap">
+                    <span class="rate-select-label">From</span>
+                    <select id="rate-from" class="rate-select" aria-describedby="rates-subtitle">
+                        <option value="lipanoi">Lipa Noi</option>
+                        <option value="nathon">Nathon</option>
+                        <option value="lamai">Lamai</option>
+                        <option value="maenam">Maenam</option>
+                        <option value="bophut-chaweng">Bophut / Chaweng</option>
+                        <option value="airport">Airport</option>
+                        <option value="chong-mon">Chong Mon</option>
+                    </select>
+                </label>
+                <label class="rate-select-wrap">
+                    <span class="rate-select-label">To</span>
+                    <select id="rate-to" class="rate-select">
+                        <option value="">All destinations</option>
+                        <option value="lipanoi">Lipa Noi</option>
+                        <option value="nathon">Nathon</option>
+                        <option value="lamai">Lamai</option>
+                        <option value="maenam">Maenam</option>
+                        <option value="bophut-chaweng">Bophut / Chaweng</option>
+                        <option value="airport">Airport</option>
+                        <option value="chong-mon">Chong Mon</option>
+                    </select>
+                </label>
+            </div>
+
+            <div id="rates-single" class="rate-single-card hidden" aria-live="polite"></div>
+            <div class="rates-grid" id="rates-grid" aria-live="polite"></div>
+            <p class="rate-disclaimer">* Rates are estimated and may vary based on specific drop-off points or night surcharges.</p>
+            <div class="rates-cta">
+                <a href="tel:+66824245439" class="btn btn-primary btn-large">Call to Book</a>
             </div>
         </div>
     </section>
@@ -169,45 +233,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-    <!-- Pricing Section -->
-    <section id="rates" class="rates-section">
-        <div class="section-container">
-            <h2 class="section-title" id="rates-heading">Rates from Lipanoi</h2>
-            <p class="section-subtitle" id="rates-subtitle">Transparent, upfront pricing. Choose where you’re going from and to—rates update automatically.</p>
-
-            <div class="rates-selectors">
-                <label class="rate-select-wrap">
-                    <span class="rate-select-label">From</span>
-                    <select id="rate-from" class="rate-select" aria-describedby="rates-subtitle">
-                        <option value="lipanoi">Lipanoi</option>
-                        <option value="nathon">Nathon</option>
-                        <option value="lamai">Lamai</option>
-                        <option value="maenam">Maenam</option>
-                        <option value="bophut-chaweng">Bophut / Chaweng</option>
-                        <option value="airport">Airport</option>
-                        <option value="chong-mon">Chong Mon</option>
-                    </select>
-                </label>
-                <label class="rate-select-wrap">
-                    <span class="rate-select-label">To</span>
-                    <select id="rate-to" class="rate-select">
-                        <option value="">All destinations</option>
-                        <option value="lipanoi">Lipanoi</option>
-                        <option value="nathon">Nathon</option>
-                        <option value="lamai">Lamai</option>
-                        <option value="maenam">Maenam</option>
-                        <option value="bophut-chaweng">Bophut / Chaweng</option>
-                        <option value="airport">Airport</option>
-                        <option value="chong-mon">Chong Mon</option>
-                    </select>
-                </label>
-            </div>
-
-            <div id="rates-single" class="rate-single-card hidden" aria-live="polite"></div>
-            <div class="rates-grid" id="rates-grid" aria-live="polite"></div>
-            <p class="rate-disclaimer">* Rates are estimated and may vary based on specific drop-off points or night surcharges.</p>
         </div>
     </section>
     <!-- Features Section -->
@@ -429,9 +454,28 @@
         const menuToggle = document.querySelector('.menu-toggle');
         const navLinks = document.querySelector('.nav-links');
         
+        function closeMenu() {
+            navLinks.classList.remove('active');
+            menuToggle.classList.remove('active');
+            menuToggle.setAttribute('aria-expanded', 'false');
+            document.body.style.overflow = '';
+        }
+        
+        function openMenu() {
+            navLinks.classList.add('active');
+            menuToggle.classList.add('active');
+            menuToggle.setAttribute('aria-expanded', 'true');
+            document.body.style.overflow = 'hidden';
+        }
+        
         menuToggle.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-            menuToggle.classList.toggle('active');
+            const isOpen = navLinks.classList.contains('active');
+            if (isOpen) closeMenu();
+            else openMenu();
+        });
+        
+        navLinks.querySelectorAll('.nav-link, .nav-menu-cta a').forEach(link => {
+            link.addEventListener('click', closeMenu);
         });
 
         // FAQ accordion
@@ -450,9 +494,9 @@
             });
         });
 
-        // Dynamic rates: price from Lipanoi (THB) – used to derive all origin/destination pairs
+        // Dynamic rates: price from Lipa Noi (THB) – used to derive all origin/destination pairs
         var RATE_ZONES = [
-            { id: 'lipanoi',    name: 'Lipanoi',            baseFromLipanoi: 0 },
+            { id: 'lipanoi',    name: 'Lipa Noi',           baseFromLipanoi: 0 },
             { id: 'nathon',     name: 'Nathon',             baseFromLipanoi: 600 },
             { id: 'lamai',      name: 'Lamai',              baseFromLipanoi: 800 },
             { id: 'maenam',     name: 'Maenam',             baseFromLipanoi: 1000 },
@@ -510,7 +554,7 @@
             singleEl.classList.add('hidden');
             gridEl.classList.remove('hidden');
 
-            // Build grid: all destinations except current origin; highlight Airport as “Most popular” when from Lipanoi
+            // Build grid: all destinations except current origin; highlight Airport as “Most popular” when from Lipa Noi
             var list = RATE_ZONES.filter(function(z) { return z.id !== fromId; });
             var isFromLipanoi = fromId === 'lipanoi';
             gridEl.innerHTML = list.map(function(z) {

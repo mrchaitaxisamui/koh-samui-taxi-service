@@ -221,21 +221,30 @@ a {
     gap: 8px;
 }
 
+.nav-phone,
 .nav-right .btn-text {
     color: var(--color-white);
 }
 
+.nav-phone:hover,
 .nav-right .btn-text:hover {
     background: rgba(255, 255, 255, 0.1);
 }
 
+.nav-book-desktop,
 .nav-right .btn-primary {
     background: var(--color-white);
     color: var(--color-black);
 }
 
+.nav-book-desktop:hover,
 .nav-right .btn-primary:hover {
     background: var(--color-gray-200);
+}
+
+/* Book Now inside mobile menu – hidden on desktop */
+.nav-menu-cta {
+    display: none;
 }
 
 .menu-toggle {
@@ -253,7 +262,20 @@ a {
     width: 24px;
     height: 2px;
     background: var(--color-white);
-    transition: var(--transition);
+    border-radius: 1px;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
+.menu-toggle.active span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.menu-toggle.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.menu-toggle.active span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
 }
 /* ============================================
    USP Banner Component
@@ -638,17 +660,32 @@ a {
     pointer-events: none;
 }
 
-.dest-card-title {
+.dest-card-content {
     position: absolute;
     left: 20px;
     right: 20px;
     bottom: 20px;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dest-card-subheading {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.dest-card-title {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--color-white);
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-    z-index: 1;
     line-height: 1.3;
 }
 
@@ -733,12 +770,12 @@ a {
 }
 
 .rate-single-card.highlighted {
-    background: var(--color-black);
+    background: var(--color-green);
     color: var(--color-white);
 }
 
 .rate-single-card.highlighted .price-estimate {
-    color: var(--color-gray-400);
+    color: rgba(255, 255, 255, 0.85);
 }
 
 .hidden {
@@ -773,12 +810,12 @@ a {
 }
 
 .rate-card.highlighted {
-    background: var(--color-black);
+    background: var(--color-green);
     color: var(--color-white);
 }
 
 .rate-card.highlighted .price-estimate {
-    color: var(--color-gray-400);
+    color: rgba(255, 255, 255, 0.85);
 }
 
 .rate-info {
@@ -807,11 +844,42 @@ a {
     font-size: 0.85rem;
     color: var(--color-gray-500);
     margin-top: 30px;
+    margin-bottom: 0;
+}
+
+.rates-cta {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.rates-cta .btn {
+    min-width: 200px;
 }
 
 @media (max-width: 768px) {
     .rates-section .rates-grid {
         grid-template-columns: 1fr;
+    }
+
+    .rates-selectors {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .rate-select-wrap {
+        width: 100%;
+    }
+
+    .rate-select {
+        width: 100%;
+        min-width: 0;
+        padding: 16px 18px;
+        min-height: 48px;
+    }
+
+    .rates-cta .btn {
+        min-width: 100%;
     }
 }
 
@@ -850,10 +918,18 @@ a {
         scroll-snap-align: start;
     }
 
+    .dest-card-content {
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+    }
+
     .dest-card-title {
         font-size: 1.1rem;
-        left: 16px;
-        bottom: 16px;
+    }
+
+    .dest-card-subheading {
+        font-size: 0.65rem;
     }
 }
 
@@ -1208,12 +1284,13 @@ a {
         right: 0;
         background: var(--color-black);
         flex-direction: column;
-        padding: 16px 24px;
+        padding: 20px 24px 24px;
         gap: 0;
         transform: translateY(-100%);
         opacity: 0;
         visibility: hidden;
-        transition: var(--transition);
+        transition: transform 0.25s ease, opacity 0.2s ease, visibility 0.25s;
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
     }
     
     .nav-links.active {
@@ -1223,16 +1300,34 @@ a {
     }
     
     .nav-link {
-        padding: 12px 0;
-        border-bottom: 1px solid var(--color-gray-800);
+        padding: 14px 0;
+        font-size: 15px;
+    }
+    
+    .nav-menu-cta {
+        display: block;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid var(--color-gray-800);
+    }
+    
+    .nav-menu-cta .btn {
+        padding: 14px 24px;
+        font-size: 15px;
     }
     
     .menu-toggle {
         display: flex;
     }
     
-    .nav-right .btn-text {
+    .nav-book-desktop {
         display: none;
+    }
+    
+    .nav-phone {
+        padding: 10px 14px;
+        font-size: 15px;
+        font-weight: 500;
     }
     
     .hero-container {
