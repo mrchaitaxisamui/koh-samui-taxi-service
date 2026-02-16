@@ -328,7 +328,7 @@ a {
     margin: 0 auto;
     padding: 64px 24px;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1.2fr 1fr;
     gap: 64px;
     align-items: center;
     min-height: calc(100vh - 64px);
@@ -339,8 +339,9 @@ a {
 }
 
 .hero-title {
-    font-size: clamp(40px, 5vw, 56px);
+    font-size: 54px;
     font-weight: 700;
+    text-align: center;
     line-height: 1.1;
     margin-bottom: 20px;
     letter-spacing: -0.02em;
