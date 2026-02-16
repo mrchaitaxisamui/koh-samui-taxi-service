@@ -124,22 +124,6 @@
         </div>
     </section>
 
-    <!-- SEO Content Section -->
-    <section class="seo-content">
-        <div class="section-container">
-            <div class="seo-content-grid">
-                <div class="seo-content-image">
-                    <img src="https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800&q=80" alt="Koh Samui island view – reliable taxi and van transfers for your trip." width="800" height="600" loading="lazy">
-                </div>
-                <div class="seo-content-text content-block">
-                    <h2 class="content-block-title">The Best Way to Navigate Koh Samui</h2>
-                    <p>Finding a reliable Koh Samui taxi shouldn't be a stressful part of your holiday. While many travelers search for a Koh Samui taxi app like Grab, availability can be limited and surge pricing frequent. Unlike the traditional "taxi mafia" reputations of the past, Mr Chai offers a modern, transparent alternative. We provide a professional Koh Samui taxi service with fixed Koh Samui taxi prices, ensuring you never have to haggle for a fair Koh Samui taxi fare.</p>
-                    <p class="content-block-p">Whether you need a Koh Samui taxi to the airport or a Koh Samui taxi boat connection at the pier, our spacious vans provide more comfort than a standard Koh Samui taxi Grab car, especially for families with luggage.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Services Section -->
     <section class="services" id="about">
         <div class="section-container">
@@ -187,7 +171,45 @@
             </div>
         </div>
     </section>
+    <!-- Pricing Section -->
+    <section id="rates" class="rates-section">
+        <div class="section-container">
+            <h2 class="section-title" id="rates-heading">Rates from Lipanoi</h2>
+            <p class="section-subtitle" id="rates-subtitle">Transparent, upfront pricing. Choose where you’re going from and to—rates update automatically.</p>
 
+            <div class="rates-selectors">
+                <label class="rate-select-wrap">
+                    <span class="rate-select-label">From</span>
+                    <select id="rate-from" class="rate-select" aria-describedby="rates-subtitle">
+                        <option value="lipanoi">Lipanoi</option>
+                        <option value="nathon">Nathon</option>
+                        <option value="lamai">Lamai</option>
+                        <option value="maenam">Maenam</option>
+                        <option value="bophut-chaweng">Bophut / Chaweng</option>
+                        <option value="airport">Airport</option>
+                        <option value="chong-mon">Chong Mon</option>
+                    </select>
+                </label>
+                <label class="rate-select-wrap">
+                    <span class="rate-select-label">To</span>
+                    <select id="rate-to" class="rate-select">
+                        <option value="">All destinations</option>
+                        <option value="lipanoi">Lipanoi</option>
+                        <option value="nathon">Nathon</option>
+                        <option value="lamai">Lamai</option>
+                        <option value="maenam">Maenam</option>
+                        <option value="bophut-chaweng">Bophut / Chaweng</option>
+                        <option value="airport">Airport</option>
+                        <option value="chong-mon">Chong Mon</option>
+                    </select>
+                </label>
+            </div>
+
+            <div id="rates-single" class="rate-single-card hidden" aria-live="polite"></div>
+            <div class="rates-grid" id="rates-grid" aria-live="polite"></div>
+            <p class="rate-disclaimer">* Rates are estimated and may vary based on specific drop-off points or night surcharges.</p>
+        </div>
+    </section>
     <!-- Features Section -->
     <section class="features">
         <div class="section-container">
@@ -234,6 +256,22 @@
                             <img src="Van.webp" alt="" class="stats-card-van" width="160" height="120" loading="lazy" aria-hidden="true">
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SEO Content Section -->
+    <section class="seo-content">
+        <div class="section-container">
+            <div class="seo-content-grid">
+                <div class="seo-content-image">
+                    <img src="https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800&q=80" alt="Koh Samui island view – reliable taxi and van transfers for your trip." width="800" height="600" loading="lazy">
+                </div>
+                <div class="seo-content-text content-block">
+                    <h2 class="content-block-title">The Best Way to Navigate Koh Samui</h2>
+                    <p>Finding a reliable Koh Samui taxi shouldn't be a stressful part of your holiday. While many travelers search for a Koh Samui taxi app like Grab, availability can be limited and surge pricing frequent. Unlike the traditional "taxi mafia" reputations of the past, Mr Chai offers a modern, transparent alternative. We provide a professional Koh Samui taxi service with fixed Koh Samui taxi prices, ensuring you never have to haggle for a fair Koh Samui taxi fare.</p>
+                    <p class="content-block-p">Whether you need a Koh Samui taxi to the airport or a Koh Samui taxi boat connection at the pier, our spacious vans provide more comfort than a standard Koh Samui taxi Grab car, especially for families with luggage.</p>
                 </div>
             </div>
         </div>
@@ -411,6 +449,99 @@
                 }
             });
         });
+
+        // Dynamic rates: price from Lipanoi (THB) – used to derive all origin/destination pairs
+        var RATE_ZONES = [
+            { id: 'lipanoi',    name: 'Lipanoi',            baseFromLipanoi: 0 },
+            { id: 'nathon',     name: 'Nathon',             baseFromLipanoi: 600 },
+            { id: 'lamai',      name: 'Lamai',              baseFromLipanoi: 800 },
+            { id: 'maenam',     name: 'Maenam',             baseFromLipanoi: 1000 },
+            { id: 'bophut-chaweng', name: 'Bophut / Chaweng', baseFromLipanoi: 1100 },
+            { id: 'airport',    name: 'Airport',            baseFromLipanoi: 1300 },
+            { id: 'chong-mon',  name: 'Chong Mon',         baseFromLipanoi: 1500 }
+        ];
+        var zoneById = {};
+        RATE_ZONES.forEach(function(z) { zoneById[z.id] = z; });
+
+        function getRate(fromId, toId) {
+            var from = zoneById[fromId], to = zoneById[toId];
+            if (!from || !to) return null;
+            if (fromId === toId) return 0;
+            return Math.abs(from.baseFromLipanoi - to.baseFromLipanoi);
+        }
+
+        function formatPrice(baht) {
+            if (baht === 0) return '—';
+            return '฿' + baht.toLocaleString();
+        }
+
+        function updateRatesUI() {
+            var fromSelect = document.getElementById('rate-from');
+            var toSelect = document.getElementById('rate-to');
+            var fromId = fromSelect && fromSelect.value;
+            var toId = toSelect && toSelect.value;
+            var heading = document.getElementById('rates-heading');
+            var subtitle = document.getElementById('rates-subtitle');
+            var singleEl = document.getElementById('rates-single');
+            var gridEl = document.getElementById('rates-grid');
+
+            if (!fromId || !heading || !gridEl) return;
+
+            var fromZone = zoneById[fromId];
+            heading.textContent = 'Rates from ' + (fromZone ? fromZone.name : fromId);
+            subtitle.textContent = toId
+                ? 'Estimated fare for your selected route.'
+                : 'Transparent, upfront pricing from ' + (fromZone ? fromZone.name : '') + ' to popular destinations across Koh Samui.';
+
+            // One specific destination selected: show single card and hide grid
+            if (toId && toId !== fromId) {
+                var rate = getRate(fromId, toId);
+                var toZone = zoneById[toId];
+                singleEl.innerHTML = '<div class="rate-info">' +
+                    '<span class="destination">' + (toZone ? toZone.name : toId) + '</span>' +
+                    '<span class="price-estimate">Estimated Price</span></div>' +
+                    '<div class="rate-value">' + formatPrice(rate) + '</div>';
+                singleEl.classList.remove('hidden');
+                singleEl.classList.add('highlighted');
+                gridEl.classList.add('hidden');
+                return;
+            }
+
+            singleEl.classList.add('hidden');
+            gridEl.classList.remove('hidden');
+
+            // Build grid: all destinations except current origin; highlight Airport as “Most popular” when from Lipanoi
+            var list = RATE_ZONES.filter(function(z) { return z.id !== fromId; });
+            var isFromLipanoi = fromId === 'lipanoi';
+            gridEl.innerHTML = list.map(function(z) {
+                var price = getRate(fromId, z.id);
+                var isPopular = isFromLipanoi && z.id === 'airport';
+                var label = isPopular ? 'Most Popular' : 'Estimated Price';
+                var cardClass = 'rate-card' + (isPopular ? ' highlighted' : '');
+                return '<div class="' + cardClass + '">' +
+                    '<div class="rate-info">' +
+                    '<span class="destination">' + z.name + '</span>' +
+                    '<span class="price-estimate">' + label + '</span>' +
+                    '</div><div class="rate-value">' + formatPrice(price) + '</div></div>';
+            }).join('');
+        }
+
+        (function initRatesSelectors() {
+            var fromSelect = document.getElementById('rate-from');
+            var toSelect = document.getElementById('rate-to');
+            if (!fromSelect || !toSelect) return;
+            fromSelect.addEventListener('change', function() {
+                var fromId = this.value;
+                var toOpts = toSelect.querySelectorAll('option');
+                toOpts.forEach(function(opt) {
+                    opt.disabled = opt.value === fromId;
+                    if (opt.value === fromId && toSelect.value === fromId) toSelect.value = '';
+                });
+                updateRatesUI();
+            });
+            toSelect.addEventListener('change', updateRatesUI);
+            updateRatesUI();
+        })();
     </script>
 </body>
 </html>
