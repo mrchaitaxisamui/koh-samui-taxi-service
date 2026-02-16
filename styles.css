@@ -334,6 +334,12 @@ a {
     object-fit: contain;
 }
 
+.hero-lottie {
+    width: 100%;
+    max-width: 500px;
+    max-height: 500px;
+}
+
 /* ============================================
    Services Section
    ============================================ */
@@ -678,7 +684,8 @@ a {
         order: 0;
     }
     
-    .hero-image img {
+    .hero-image img,
+    .hero-lottie {
         max-height: 350px;
     }
     

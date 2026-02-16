@@ -67,7 +67,7 @@
                 <p class="hero-note">Available 24/7 across Koh Samui</p>
             </div>
             <div class="hero-image">
-                <img src="hero-illustration.png" alt="Travelers with van in Koh Samui">
+                <div id="hero-lottie" class="hero-lottie" aria-hidden="true"></div>
             </div>
         </div>
     </section>
@@ -245,7 +245,21 @@
         </div>
     </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" integrity="sha512-jnM5n+L+0M2gVd0F0QMFb2v0A1R/uStF4Q2p6V0xLh+pt0s+0F6z2Yh6g+9xqIq0AEeNnboXjZZyYy6bNxqQpw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
+        // Hero Lottie animation (car driving)
+        (function initHeroLottie() {
+            var container = document.getElementById('hero-lottie');
+            if (!container) return;
+            lottie.loadAnimation({
+                container: container,
+                renderer: 'svg',
+                loop: true,
+                autoplay: true,
+                path: 'Car-driving.json'
+            });
+        })();
+
         // Mobile menu toggle
         const menuToggle = document.querySelector('.menu-toggle');
         const navLinks = document.querySelector('.nav-links');
