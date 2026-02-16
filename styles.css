@@ -295,6 +295,10 @@ a {
     line-height: 1.6;
 }
 
+.hero-subtitle .checkmark {
+    color: var(--color-green);
+}
+
 .wrapper-subtitle {
   display: flex;
   justify-content: center;
