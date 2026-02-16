@@ -290,6 +290,12 @@ a {
     line-height: 1.6;
 }
 
+.wrapper-subtitle {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
 .booking-form {
     background: var(--color-gray-100);
     border-radius: var(--radius-lg);
