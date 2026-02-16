@@ -791,6 +791,7 @@ a {
 }
 
 .rate-card {
+    position: relative;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -800,6 +801,17 @@ a {
     border: 2px solid transparent;
     transition: var(--transition);
     cursor: default;
+}
+
+.rate-card-plane {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    transform: translate(-52%, -50%);
+    width: 58px;
+    height: auto;
+    pointer-events: none;
+    opacity: 0.9;
 }
 
 .rate-card:hover {

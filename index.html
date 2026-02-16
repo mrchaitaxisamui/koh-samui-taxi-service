@@ -562,11 +562,14 @@
                 var isPopular = isFromLipanoi && z.id === 'airport';
                 var label = isPopular ? 'Most Popular' : 'Estimated Price';
                 var cardClass = 'rate-card' + (isPopular ? ' highlighted' : '');
+                var planeImg = z.id === 'airport'
+                    ? '<img src="Airplane.svg" alt="" class="rate-card-plane" aria-hidden="true">'
+                    : '';
                 return '<div class="' + cardClass + '">' +
                     '<div class="rate-info">' +
                     '<span class="destination">' + z.name + '</span>' +
                     '<span class="price-estimate">' + label + '</span>' +
-                    '</div><div class="rate-value">' + formatPrice(price) + '</div></div>';
+                    '</div>' + planeImg + '<div class="rate-value">' + formatPrice(price) + '</div></div>';
             }).join('');
         }
 
