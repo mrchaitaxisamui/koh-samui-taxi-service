@@ -861,7 +861,9 @@ a {
 
 .rates-cta {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
+    gap: 16px;
     margin-top: 40px;
 }
 
@@ -1277,6 +1279,7 @@ a {
     gap: 10px;
 }
 
+/* Green WhatsApp (hero / primary WhatsApp style) */
 .btn-whatsapp {
     background: #25D366;
     color: var(--color-white);
@@ -1287,6 +1290,28 @@ a {
 
 .btn-whatsapp:hover {
     background: #20bd5a;
+}
+
+/* Secondary WhatsApp (rates / unlimited – grey, not prominent) */
+.btn-whatsapp-dark {
+    background: var(--color-gray-200);
+    color: var(--color-gray-800);
+    padding: 16px 24px;
+    font-size: 16px;
+    border-radius: var(--radius);
+    border: 1px solid var(--color-gray-300);
+}
+
+.btn-whatsapp-dark:hover {
+    background: var(--color-gray-300);
+    color: var(--color-gray-900);
+    border-color: var(--color-gray-400);
+}
+
+.btn-whatsapp-dark.btn-large {
+    padding: 18px 40px;
+    font-size: 18px;
+    border-radius: var(--radius-lg);
 }
 
 .whatsapp-icon {
