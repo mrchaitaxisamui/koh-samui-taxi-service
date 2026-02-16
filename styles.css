@@ -309,53 +309,6 @@ a {
     gap: 12px;
 }
 
-.form-field {
-    position: relative;
-    margin-bottom: 12px;
-}
-
-.form-field:last-of-type {
-    margin-bottom: 16px;
-}
-
-.field-icon {
-    position: absolute;
-    left: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-}
-
-.field-icon.pickup {
-    background: var(--color-black);
-}
-
-.field-icon.dropoff {
-    background: var(--color-gray-400);
-}
-
-.form-field input {
-    width: 100%;
-    padding: 16px 16px 16px 40px;
-    border: none;
-    border-radius: var(--radius);
-    background: var(--color-white);
-    font-size: 16px;
-    font-family: var(--font-primary);
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.form-field input:hover {
-    background: var(--color-gray-50);
-}
-
-.form-field input::placeholder {
-    color: var(--color-gray-500);
-}
-
 .hero-note {
     font-size: 14px;
     color: var(--color-gray-500);
