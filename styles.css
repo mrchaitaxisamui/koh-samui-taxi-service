@@ -255,6 +255,64 @@ a {
     background: var(--color-white);
     transition: var(--transition);
 }
+/* ============================================
+   USP Banner Component
+   ============================================ */
+   .usp-banner {
+    position: relative;
+    top: 64px; /* Matches your navbar height */
+    background: var(--color-gray-100);
+    border-bottom: 1px solid var(--color-gray-200);
+    height: 40px;
+    z-index: 900;
+}
+
+.usp-container-fixed {
+    max-width: 1280px;
+    margin: 0 auto;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.usp-wrapper {
+    /* 5 items = 20s total (4s per item) */
+    animation: usp-slide 20s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+.usp-item {
+    height: 40px;
+    line-height: 40px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-gray-700);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Update Hero Padding to account for the new banner */
+.hero {
+    padding-top: 104px !important; /* Navbar (64px) + Banner (40px) */
+}
+
+@keyframes usp-slide {
+    0%, 15% { transform: translateY(0); }
+    20%, 35% { transform: translateY(-40px); }
+    40%, 55% { transform: translateY(-80px); }
+    60%, 75% { transform: translateY(-120px); }
+    80%, 95% { transform: translateY(-160px); }
+    100% { transform: translateY(-200px); }
+}
+
+/* Adjust for Mobile */
+@media (max-width: 768px) {
+    .usp-item {
+        font-size: 11px;
+    }
+}
 
 /* ============================================
    Hero Section
