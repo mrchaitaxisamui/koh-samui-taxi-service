@@ -252,10 +252,8 @@
         (function initHeroLottie() {
             var container = document.getElementById('hero-lottie');
             if (!container) return;
-            // Base path = directory of current page (fixes GitHub Pages project sites)
-            var pathname = (window.location.pathname || '/').replace(/\/$/, '') || '/';
-            var base = /\/[^/]+\.(html?|php)(\?|$)/i.test(pathname) ? pathname.replace(/\/[^/]+$/, '') : pathname;
-            var jsonPath = (base === '/' ? '' : base) + '/Car-driving.json';
+            // Resolve JSON path from current page URL (works on GitHub Pages with any path)
+            var jsonPath = new URL('Car-driving.json', window.location.href).href;
             var anim = lottie.loadAnimation({
                 container: container,
                 renderer: 'svg',
