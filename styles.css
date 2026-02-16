@@ -446,35 +446,6 @@ a {
     transform: translateY(-4px);
 }
 
-.service-image {
-    height: 180px;
-    background: var(--color-gray-100);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-.service-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.service-icon {
-    height: 180px;
-    background: var(--color-gray-100);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.service-icon svg {
-    width: 64px;
-    height: 64px;
-    color: var(--color-black);
-}
-
 .service-content {
     padding: 24px;
 }
@@ -579,6 +550,7 @@ a {
 }
 
 .stats-card {
+    position: relative;
     background: var(--color-black);
     border-radius: var(--radius-lg);
     padding: 40px;
@@ -586,6 +558,20 @@ a {
     flex-direction: column;
     gap: 32px;
     min-width: 280px;
+    overflow: hidden;
+}
+
+.stats-card-van {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: auto;
+    max-width: 45%;
+    max-height: 120px;
+    height: auto;
+    object-fit: contain;
+    object-position: bottom right;
+    pointer-events: none;
 }
 
 .stat {
@@ -716,14 +702,65 @@ a {
     background: #f9f9f9;
 }
 
+.seo-content-grid {
+    display: grid;
+    gap: 32px;
+    align-items: start;
+}
+
+.seo-content-image {
+    grid-area: seo-image;
+}
+
+.seo-content-text {
+    grid-area: seo-text;
+    align-self: start;
+}
+
+/* Desktop: image left (2 rows), text right (2 rows) – content top-aligned */
+@media (min-width: 769px) {
+    .seo-content-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "seo-image seo-text"
+            "seo-image seo-text";
+    }
+}
+
+/* Mobile: image → text */
+@media (max-width: 768px) {
+    .seo-content-grid {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "seo-image"
+            "seo-text";
+    }
+}
+
+.seo-content-image {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--color-gray-200);
+}
+
+.seo-content-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    vertical-align: middle;
+}
+
 .seo-content .section-title {
-    margin-bottom: 32px;
+    margin-bottom: 0;
 }
 
 .content-block {
     max-width: 800px;
-    margin: 0 auto;
     line-height: 1.6;
+}
+
+.seo-content-text.content-block {
+    max-width: none;
 }
 
 .content-block-title {
