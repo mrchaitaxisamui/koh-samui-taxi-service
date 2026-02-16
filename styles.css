@@ -940,6 +940,287 @@ a {
     color: var(--color-black);
 }
 
+/* ============================================
+   Adventure Section – Package Cards (horizontal scroll + accordion)
+   ============================================ */
+.adventure-section {
+    padding: 80px 0;
+    background: var(--color-white);
+}
+
+.adventure-heading {
+    text-align: center;
+}
+
+.adventure-subtitle {
+    max-width: 560px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 48px;
+}
+
+.packages-scroll-wrap {
+    margin: 0 -24px;
+    padding: 0 24px;
+    overflow: hidden;
+}
+
+.packages-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 20px;
+    overflow-x: auto;
+    overflow-y: visible;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+}
+
+.packages-grid::-webkit-scrollbar {
+    height: 8px;
+}
+
+.packages-grid::-webkit-scrollbar-track {
+    background: var(--color-gray-100);
+    border-radius: 4px;
+}
+
+.packages-grid::-webkit-scrollbar-thumb {
+    background: var(--color-gray-400);
+    border-radius: 4px;
+}
+
+.package-card {
+    position: relative;
+    flex: 0 0 auto;
+    width: 320px;
+    min-height: 180px;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-gray-200);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.package-card:hover {
+    box-shadow: var(--shadow);
+    border-color: var(--color-gray-300);
+}
+
+.package-card.is-open {
+    border-color: var(--color-gray-300);
+    box-shadow: var(--shadow-lg);
+}
+
+.package-card--green.is-open { border-color: rgba(34, 197, 94, 0.4); }
+.package-card--blue.is-open { border-color: rgba(59, 130, 246, 0.4); }
+.package-card--orange.is-open { border-color: rgba(249, 115, 22, 0.4); }
+.package-card--red.is-open { border-color: rgba(239, 68, 68, 0.4); }
+
+.package-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.package-card--green .package-accent { background: #22c55e; }
+.package-card--blue .package-accent { background: #3b82f6; }
+.package-card--orange .package-accent { background: #f97316; }
+.package-card--red .package-accent { background: #ef4444; }
+
+.package-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 20px 20px 16px;
+    padding-top: 24px;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-primary);
+    color: inherit;
+    transition: background 0.2s ease;
+}
+
+.package-header:hover {
+    background: var(--color-gray-100);
+}
+
+.package-header:focus-visible {
+    outline: 2px solid var(--color-black);
+    outline-offset: 2px;
+}
+
+.package-header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.package-subheading {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-gray-600);
+}
+
+.package-heading {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+.package-duration-inline {
+    font-size: 0.8125rem;
+    color: var(--color-gray-500);
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+.package-chevron {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: var(--color-gray-500);
+    transition: transform 0.25s ease;
+}
+
+.package-card.is-open .package-chevron {
+    transform: rotate(180deg);
+}
+
+.package-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease;
+}
+
+.package-card.is-open .package-body {
+    grid-template-rows: 1fr;
+}
+
+.package-body-inner {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.package-card.is-open .package-body-inner {
+    overflow: visible;
+}
+
+.package-body-inner {
+    padding: 0 20px 20px;
+}
+
+.package-desc {
+    font-size: 0.875rem;
+    color: var(--color-gray-600);
+    line-height: 1.55;
+    margin-bottom: 12px;
+}
+
+.package-highlights {
+    list-style: none;
+    margin: 0 0 14px 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.package-highlights li {
+    font-size: 0.8125rem;
+    color: var(--color-gray-700);
+    line-height: 1.45;
+    padding-left: 18px;
+    position: relative;
+}
+
+.package-highlights li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.4em;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--color-gray-400);
+}
+
+.package-card--green .package-highlights li::before { background: #22c55e; }
+.package-card--blue .package-highlights li::before { background: #3b82f6; }
+.package-card--orange .package-highlights li::before { background: #f97316; }
+.package-card--red .package-highlights li::before { background: #ef4444; }
+
+.package-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.8125rem;
+    color: var(--color-gray-600);
+    margin-bottom: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--color-gray-200);
+}
+
+.package-duration,
+.package-cost {
+    font-weight: 500;
+}
+
+.package-cta {
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .adventure-section {
+        padding: 48px 0;
+    }
+
+    .adventure-subtitle {
+        margin-bottom: 32px;
+    }
+
+    .packages-scroll-wrap {
+        margin: 0 -16px;
+        padding: 0 16px;
+    }
+
+    .package-card {
+        width: 280px;
+        min-height: 160px;
+    }
+
+    .package-header {
+        padding: 18px 16px 14px;
+        padding-top: 22px;
+    }
+
+    .package-heading {
+        font-size: 1.15rem;
+    }
+
+    .package-body-inner {
+        padding: 0 16px 16px;
+    }
+}
+
 /* Unlimited section – mobile (fix layout on iPhone/narrow viewports) */
 @media (max-width: 768px) {
     .unlimited-section {
