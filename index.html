@@ -188,16 +188,40 @@
         </div>
     </section>
 
+    <!-- Unlimited Ride Section -->
+    <section class="unlimited-section" id="unlimited">
+        <div class="section-container">
+            <h2 class="section-title">Unlimited ride</h2>
+            <div class="unlimited-lottie-wrap">
+                <div id="unlimited-lottie" class="unlimited-lottie" aria-hidden="true"></div>
+            </div>
+            <p class="section-subtitle">Explore the island at your pace—unlimited stops, one fixed price.</p>
+            <div class="unlimited-card">
+                <div class="unlimited-price-row">
+                    <span class="unlimited-label">4 hour minimum</span>
+                    <span class="unlimited-value">฿2,000</span>
+                </div>
+                <div class="unlimited-price-row">
+                    <span class="unlimited-label">Additional hour</span>
+                    <span class="unlimited-value">฿500</span>
+                </div>
+            </div>
+            <div class="rates-cta">
+                <a href="tel:+66824245439" class="btn btn-primary btn-large">Book unlimited ride</a>
+            </div>
+        </div>
+    </section>
+
     <!-- Services Section -->
     <section class="services" id="about">
         <div class="section-container">
-            <h2 class="section-title">Why choose Mr Chai</h2>
+            <h2 class="section-title">Why choose Mr Chai taxi</h2>
             
             <div class="services-grid">
                 <div class="service-card">
                     <div class="service-content">
                         <h3 class="service-title">Shuttel Bus Taxi</h3>
-                        <p class="service-desc">Extra room for passengers, luggage, and equipment. Perfect for families and groups.</p>
+                        <p class="service-desc">Extra room for passengers, luggage, and equipment. Perfect for families and groups up to 12 passengers.</p>
                         <a href="tel:+66824245439" class="service-link">
                             <span>Book now</span>
                             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -422,26 +446,43 @@
 
     <script id="lottie-script" src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" integrity="sha512-jEnuDt6jfecCjthQAJ+ed0MTVA++5ZKmlUcmDGBv2vUI/REn6FuIdixLNnQT+vKusE2hhTk2is3cFvv5wA+Sgg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
-        // Hero Lottie animation (car driving) - runs after lottie script loads
-        (function initHeroLottie() {
+        // Hero + Unlimited Lottie animations (lottie-web, JSON) - runs after lottie script loads
+        (function initLottieAnimations() {
             function run() {
-                var container = document.getElementById('hero-lottie');
                 var lottieLib = (typeof window !== 'undefined' && window.lottie);
-                if (!container || !lottieLib) return;
-                // GitHub Pages: base URL must end with / so "Car-driving.json" resolves to repo folder
+                if (!lottieLib) return;
                 var pathname = window.location.pathname || '/';
                 var basePath = /\/[^/]+\.[^/]+$/.test(pathname) ? pathname.replace(/\/[^/]+$/, '') : pathname;
                 if (!basePath.endsWith('/')) basePath += '/';
-                var jsonPath = window.location.origin + basePath + 'Car-driving.json';
-                var anim = lottieLib.loadAnimation({
-                    container: container,
-                    renderer: 'svg',
-                    loop: true,
-                    autoplay: true,
-                    path: jsonPath
-                });
-                anim.addEventListener('data_ready', function() { container.classList.add('lottie-ready'); });
-                anim.addEventListener('error', function(e) { console.error('Lottie error:', e); });
+                var base = window.location.origin + basePath;
+
+                // Hero: Car-driving.json
+                var heroContainer = document.getElementById('hero-lottie');
+                if (heroContainer) {
+                    var heroAnim = lottieLib.loadAnimation({
+                        container: heroContainer,
+                        renderer: 'svg',
+                        loop: true,
+                        autoplay: true,
+                        path: base + 'Car-driving.json'
+                    });
+                    heroAnim.addEventListener('data_ready', function() { heroContainer.classList.add('lottie-ready'); });
+                    heroAnim.addEventListener('error', function(e) { console.error('Lottie hero error:', e); });
+                }
+
+                // Unlimited section: RedCar.json
+                var unlimitedContainer = document.getElementById('unlimited-lottie');
+                if (unlimitedContainer) {
+                    var unlimitedAnim = lottieLib.loadAnimation({
+                        container: unlimitedContainer,
+                        renderer: 'svg',
+                        loop: true,
+                        autoplay: true,
+                        path: base + 'RedCar.json'
+                    });
+                    unlimitedAnim.addEventListener('data_ready', function() { unlimitedContainer.classList.add('lottie-ready'); });
+                    unlimitedAnim.addEventListener('error', function(e) { console.error('Lottie unlimited error:', e); });
+                }
             }
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', run);
