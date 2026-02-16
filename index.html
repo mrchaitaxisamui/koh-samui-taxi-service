@@ -248,21 +248,30 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" integrity="sha512-jnM5n+L+0M2gVd0F0QMFb2v0A1R/uStF4Q2p6V0xLh+pt0s+0F6z2Yh6g+9xqIq0AEeNnboXjZZyYy6bNxqQpw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
         // Hero Lottie animation (car driving)
-        // Lottie = JSON animation, NOT video - no video player needed
         (function initHeroLottie() {
-            var container = document.getElementById('hero-lottie');
-            if (!container) return;
-            // Resolve JSON path from current page URL (works on GitHub Pages with any path)
-            var jsonPath = new URL('Car-driving.json', window.location.href).href;
-            var anim = lottie.loadAnimation({
-                container: container,
-                renderer: 'svg',
-                loop: true,
-                autoplay: true,
-                path: jsonPath
-            });
-            anim.addEventListener('DOMLoaded', function() { console.log('Lottie loaded OK'); });
-            anim.addEventListener('error', function(e) { console.error('Lottie error:', e); });
+            function run() {
+                var container = document.getElementById('hero-lottie');
+                if (!container || typeof lottie === 'undefined') return;
+                // GitHub Pages: base URL must end with / so "Car-driving.json" resolves to repo folder
+                var pathname = window.location.pathname || '/';
+                var basePath = /\/[^/]+\.[^/]+$/.test(pathname) ? pathname.replace(/\/[^/]+$/, '') : pathname;
+                if (!basePath.endsWith('/')) basePath += '/';
+                var jsonPath = window.location.origin + basePath + 'Car-driving.json';
+                var anim = lottie.loadAnimation({
+                    container: container,
+                    renderer: 'svg',
+                    loop: true,
+                    autoplay: true,
+                    path: jsonPath
+                });
+                anim.addEventListener('data_ready', function() { container.classList.add('lottie-ready'); });
+                anim.addEventListener('error', function(e) { console.error('Lottie error:', e); });
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', run);
+            } else {
+                run();
+            }
         })();
 
         // Mobile menu toggle
