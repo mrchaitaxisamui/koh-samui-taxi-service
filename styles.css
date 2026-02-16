@@ -1023,20 +1023,6 @@ a {
 .package-card--orange.is-open { border-color: rgba(249, 115, 22, 0.4); }
 .package-card--red.is-open { border-color: rgba(239, 68, 68, 0.4); }
 
-.package-accent {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-}
-
-.package-card--green .package-accent { background: #22c55e; }
-.package-card--blue .package-accent { background: #3b82f6; }
-.package-card--orange .package-accent { background: #f97316; }
-.package-card--red .package-accent { background: #ef4444; }
-
 .package-header {
     display: flex;
     align-items: center;
@@ -1061,6 +1047,15 @@ a {
 .package-header:focus-visible {
     outline: 2px solid var(--color-black);
     outline-offset: 2px;
+}
+
+.package-subheading-img {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    border-radius: var(--radius-md);
+    object-fit: cover;
+    background: var(--color-gray-200);
 }
 
 .package-header-text {
