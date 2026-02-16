@@ -245,19 +245,20 @@
         </div>
     </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" integrity="sha512-jEnuDt6jfecCjthQAJ+ed0MTVA++5ZKmlUcmDGBv2vUI/REn6FuIdixLNnQT+vKusE2hhTk2is3cFvv5wA+Sgg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script id="lottie-script" src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" integrity="sha512-jEnuDt6jfecCjthQAJ+ed0MTVA++5ZKmlUcmDGBv2vUI/REn6FuIdixLNnQT+vKusE2hhTk2is3cFvv5wA+Sgg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
-        // Hero Lottie animation (car driving)
+        // Hero Lottie animation (car driving) - runs after lottie script loads
         (function initHeroLottie() {
             function run() {
                 var container = document.getElementById('hero-lottie');
-                if (!container || typeof lottie === 'undefined') return;
+                var lottieLib = (typeof window !== 'undefined' && window.lottie);
+                if (!container || !lottieLib) return;
                 // GitHub Pages: base URL must end with / so "Car-driving.json" resolves to repo folder
                 var pathname = window.location.pathname || '/';
                 var basePath = /\/[^/]+\.[^/]+$/.test(pathname) ? pathname.replace(/\/[^/]+$/, '') : pathname;
                 if (!basePath.endsWith('/')) basePath += '/';
                 var jsonPath = window.location.origin + basePath + 'Car-driving.json';
-                var anim = lottie.loadAnimation({
+                var anim = lottieLib.loadAnimation({
                     container: container,
                     renderer: 'svg',
                     loop: true,
