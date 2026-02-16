@@ -248,16 +248,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" integrity="sha512-jnM5n+L+0M2gVd0F0QMFb2v0A1R/uStF4Q2p6V0xLh+pt0s+0F6z2Yh6g+9xqIq0AEeNnboXjZZyYy6bNxqQpw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
         // Hero Lottie animation (car driving)
+        // Lottie = JSON animation, NOT video - no video player needed
         (function initHeroLottie() {
             var container = document.getElementById('hero-lottie');
             if (!container) return;
-            lottie.loadAnimation({
+            // Base path = directory of current page (fixes GitHub Pages project sites)
+            var pathname = (window.location.pathname || '/').replace(/\/$/, '') || '/';
+            var base = /\/[^/]+\.(html?|php)(\?|$)/i.test(pathname) ? pathname.replace(/\/[^/]+$/, '') : pathname;
+            var jsonPath = (base === '/' ? '' : base) + '/Car-driving.json';
+            var anim = lottie.loadAnimation({
                 container: container,
                 renderer: 'svg',
                 loop: true,
                 autoplay: true,
-                path: 'Car-driving.json'
+                path: jsonPath
             });
+            anim.addEventListener('DOMLoaded', function() { console.log('Lottie loaded OK'); });
+            anim.addEventListener('error', function(e) { console.error('Lottie error:', e); });
         })();
 
         // Mobile menu toggle
