@@ -98,6 +98,52 @@ h1, h2, h3, h4, h5, h6,
     transform: translateY(-1px);
 }
 
+/* Secondary: workhorse, pairs with primary – less prominent */
+.btn-secondary {
+    background: transparent;
+    color: var(--color-black);
+    border: 2px solid var(--color-gray-400);
+}
+
+.btn-secondary:hover {
+    border-color: var(--color-black);
+    background: var(--color-gray-100);
+}
+
+.btn-secondary:focus-visible {
+    outline: 2px solid var(--color-black);
+    outline-offset: 2px;
+}
+
+/* Secondary on dark backgrounds */
+.cta .btn-secondary,
+.btn-secondary-dark {
+    border-color: rgba(255, 255, 255, 0.5);
+    color: var(--color-white);
+}
+
+.cta .btn-secondary:hover,
+.btn-secondary-dark:hover {
+    border-color: var(--color-white);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.cta .btn-secondary:focus-visible {
+    outline: 2px solid var(--color-white);
+    outline-offset: 2px;
+}
+
+/* Tertiary: subtle, text-like */
+.btn-tertiary {
+    background: transparent;
+    color: var(--color-gray-700);
+    border: none;
+}
+
+.btn-tertiary:hover {
+    color: var(--color-black);
+}
+
 .btn-dark {
     background: var(--color-black);
     color: var(--color-white);
@@ -394,10 +440,11 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .booking-form {
-    background: var(--color-gray-100);
+    background: var(--color-white);
     border-radius: var(--radius-lg);
-    padding: 24px;
-    margin-bottom: 16px;
+    padding: 28px;
+    margin-bottom: 20px;
+    border: 1px solid var(--color-gray-200);
 }
 
 .booking-form-buttons {
@@ -440,7 +487,7 @@ h1, h2, h3, h4, h5, h6,
    Services Section
    ============================================ */
 .services {
-    padding: 80px 0;
+    padding: 96px 0;
     background: var(--color-gray-100);
 }
 
@@ -453,7 +500,7 @@ h1, h2, h3, h4, h5, h6,
 .section-title {
     font-size: 32px;
     font-weight: 700;
-    margin-bottom: 40px;
+    margin-bottom: 48px;
 }
 
 .services-grid {
@@ -462,21 +509,22 @@ h1, h2, h3, h4, h5, h6,
     gap: 24px;
 }
 
+/* Minimal card treatment – Whitehurst: content focus, less container weight */
 .service-card {
     background: var(--color-white);
     border-radius: var(--radius-lg);
     overflow: hidden;
     transition: var(--transition);
-    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-gray-200);
 }
 
 .service-card:hover {
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-4px);
+    border-color: var(--color-gray-300);
+    box-shadow: var(--shadow);
 }
 
 .service-content {
-    padding: 24px;
+    padding: 28px;
 }
 
 .service-title {
@@ -522,7 +570,7 @@ h1, h2, h3, h4, h5, h6,
    Features Section
    ============================================ */
 .features {
-    padding: 80px 0;
+    padding: 96px 0;
     background: var(--color-white);
 }
 
@@ -625,18 +673,18 @@ h1, h2, h3, h4, h5, h6,
    Popular Destinations
    ============================================ */
 .destinations {
-    padding: 60px 0;
+    padding: 80px 0;
     background: var(--color-white);
 }
 
 .destinations .section-title {
-    margin-bottom: 32px;
+    margin-bottom: 40px;
 }
 
 .destinations-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    gap: 24px;
 }
 
 .dest-card {
@@ -660,10 +708,11 @@ h1, h2, h3, h4, h5, h6,
     transform: scale(1.05);
 }
 
+/* Lighter overlay for content focus – Whitehurst: less visual weight on cards */
 .dest-card-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 40%, transparent 100%);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.2) 50%, transparent 100%);
     pointer-events: none;
 }
 
@@ -700,7 +749,7 @@ h1, h2, h3, h4, h5, h6,
    Rates Section
    ============================================ */
 .rates-section {
-    padding: 80px 0;
+    padding: 96px 0;
     background: var(--color-white);
 }
 
@@ -797,15 +846,16 @@ h1, h2, h3, h4, h5, h6,
     margin: 0 auto;
 }
 
+/* Lighter treatment – Whitehurst: focus on content, not backgrounds */
 .rate-card {
     position: relative;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 20px 24px;
-    background: var(--color-gray-100);
+    background: var(--color-white);
     border-radius: var(--radius);
-    border: 2px solid transparent;
+    border: 1px solid var(--color-gray-200);
     transition: var(--transition);
     cursor: default;
 }
@@ -822,10 +872,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .rate-card:hover {
-    background: var(--color-white);
-    border-color: var(--color-black);
-    box-shadow: var(--shadow);
-    transform: translateY(-2px);
+    border-color: var(--color-gray-400);
 }
 
 .rate-card.highlighted {
@@ -871,7 +918,7 @@ h1, h2, h3, h4, h5, h6,
     flex-wrap: wrap;
     justify-content: center;
     gap: 16px;
-    margin-top: 40px;
+    margin-top: 48px;
 }
 
 .rates-cta .btn {
@@ -882,7 +929,7 @@ h1, h2, h3, h4, h5, h6,
    Unlimited Ride Section
    ============================================ */
 .unlimited-section {
-    padding: 80px 0;
+    padding: 96px 0;
     background: var(--color-gray-100);
 }
 
@@ -951,7 +998,7 @@ h1, h2, h3, h4, h5, h6,
    Adventure Section – Package Cards (horizontal scroll + accordion)
    ============================================ */
 .adventure-section {
-    padding: 80px 0;
+    padding: 96px 0;
     background: var(--color-white);
 }
 
@@ -999,6 +1046,7 @@ h1, h2, h3, h4, h5, h6,
     border-radius: 4px;
 }
 
+/* Content-first cards – Whitehurst: minimal container, focus on content */
 .package-card {
     position: relative;
     flex: 0 0 auto;
@@ -1008,7 +1056,7 @@ h1, h2, h3, h4, h5, h6,
     scroll-snap-stop: always;
     background: var(--color-white);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-gray-200);
     transition: box-shadow 0.2s ease, border-color 0.2s ease;
     display: flex;
     flex-direction: column;
@@ -1016,7 +1064,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .package-card:hover {
-    box-shadow: var(--shadow);
+    border-color: var(--color-gray-300);
 }
 
 .package-card.is-open {
@@ -1585,7 +1633,7 @@ h1, h2, h3, h4, h5, h6,
     gap: 10px;
 }
 
-/* Green WhatsApp (hero / primary WhatsApp style) */
+/* Primary WhatsApp (when it’s the main CTA, e.g. alternate hero) */
 .btn-whatsapp {
     background: #25D366;
     color: var(--color-white);
