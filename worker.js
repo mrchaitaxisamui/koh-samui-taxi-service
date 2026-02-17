@@ -8,7 +8,7 @@
  *   POST /api/telegram-webhook   - Handle Accept/Decline callback from Telegram
  */
 
-import { parsePhoneNumberFromString } from 'libphonenumber-js/min';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
