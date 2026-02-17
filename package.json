@@ -1,0 +1,9 @@
+{
+  "name": "mrchai-dispatch",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "libphonenumber-js": "^1.11.0"
+  }
+}

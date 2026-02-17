@@ -8,6 +8,8 @@
  *   POST /api/telegram-webhook   - Handle Accept/Decline callback from Telegram
  */
 
+import { parsePhoneNumberFromString, isValidPhoneNumber } from 'libphonenumber-js/min';
+
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -97,11 +99,14 @@ async function handleRideRequest(request, env) {
   const pickupLng = Number(pickup.lng);
   const destLat = Number(destination.lat);
   const destLng = Number(destination.lng);
-  const phone = String(customerPhone || '').trim();
-  const digits = phone.replace(/\D/g, '');
-  if (!phone || digits.length < 8 || digits.length > 15) {
-    return jsonResponse({ error: 'Invalid or missing customer phone number' }, 400);
+  const phoneRaw = String(customerPhone || '').trim();
+  const parsed = parsePhoneNumberFromString(phoneRaw);
+  if (!parsed || !isValidPhoneNumber(phoneRaw)) {
+    return jsonResponse({
+      error: 'Invalid or unsupported phone number. Use international format with country code (e.g. +66 82 123 4567, +44 7700 900000).',
+    }, 400);
   }
+  const phoneE164 = parsed.format('E.164');
   if (!Number.isFinite(pickupLat) || !Number.isFinite(pickupLng) ||
       !Number.isFinite(destLat) || !Number.isFinite(destLng)) {
     return jsonResponse({
@@ -129,7 +134,7 @@ async function handleRideRequest(request, env) {
     pickup: { lat: pickupLat, lng: pickupLng, address: pickupAddress },
     destination: { lat: destLat, lng: destLng, address: destAddress },
     timestamp: Date.now(),
-    customerPhone: phone,
+    customerPhone: phoneE164,
     distanceKm,
   };
 
@@ -143,7 +148,7 @@ async function handleRideRequest(request, env) {
             `🆔 Booking ID: ${rideId}`,
             `📍 Pickup: ${pickupAddress}`,
             `🏁 Destination: ${destAddress}`,
-            `📱 Customer: ${formatPhone(phone)}`,
+            `📱 Customer: ${parsed.format('INTERNATIONAL')}`,
             `⏰ Distance: ${distanceKm} km`,
           ].join('\n');
           const keyboard = {

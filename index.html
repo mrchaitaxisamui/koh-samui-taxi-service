@@ -638,6 +638,7 @@
     <!-- Leaflet Maps and Geosearch for Address Autocomplete -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-geosearch@3.8.0/dist/geosearch.umd.js"></script>
+    <script src="https://unpkg.com/libphonenumber-js@1/bundle/libphonenumber-min.js"></script>
     <script>
         // Hero + Unlimited Lottie animations (lottie-web, JSON) - runs after lottie script loads
         (function initLottieAnimations() {
@@ -949,6 +950,9 @@
             setupAutocomplete(destinationInput, destinationDropdown, function(d) { destinationData = d; });
 
             function validatePhone(val) {
+                if (typeof window.libphonenumber !== 'undefined' && window.libphonenumber.isValidPhoneNumber) {
+                    return window.libphonenumber.isValidPhoneNumber(val);
+                }
                 var digits = val.replace(/\D/g, '');
                 return digits.length >= 8 && digits.length <= 15;
             }
@@ -1022,7 +1026,7 @@
                 if (!destinationInput.value.trim()) { showError('destination', 'Please enter a destination.'); valid = false; }
                 if (!pickupData) { showError('pickup', 'Please select a pickup from the suggestions.'); valid = false; }
                 if (!destinationData) { showError('destination', 'Please select a destination from the suggestions.'); valid = false; }
-                if (!validatePhone(phoneInput.value)) { showError('phone', 'Please enter a valid phone number.'); valid = false; }
+                if (!validatePhone(phoneInput.value)) { showError('phone', 'Enter a valid phone number with country code (e.g. +66 82 123 4567, +44 7700 900000).'); valid = false; }
                 if (!valid) return;
 
                 if (!API_BASE) {
