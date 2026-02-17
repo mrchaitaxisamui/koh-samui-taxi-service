@@ -2178,3 +2178,316 @@ h1, h2, h3, h4, h5, h6,
         grid-template-columns: 1fr;
     }
 }
+
+/* ============================================
+   Booking Confirmation Page (Uber Eats–style)
+   ============================================ */
+.confirmation-page {
+    min-height: 100vh;
+    background: var(--color-gray-100);
+}
+
+.confirmation-nav {
+    padding: 16px 24px;
+    background: var(--color-white);
+    border-bottom: 1px solid var(--color-gray-200);
+}
+
+.confirmation-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--color-black);
+}
+
+.confirmation-logo-icon {
+    width: 36px;
+    height: 36px;
+}
+
+.confirmation-main {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 24px 20px 48px;
+}
+
+.confirmation-card {
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    padding: 32px 24px;
+}
+
+.confirmation-card[hidden],
+.confirmation-error[hidden],
+.confirmation-loading[hidden] {
+    display: none !important;
+}
+
+.confirmation-success {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.confirmation-check {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px;
+    background: var(--color-green);
+    color: var(--color-white);
+    font-size: 32px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.confirmation-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.confirmation-subtitle {
+    font-size: 15px;
+    color: var(--color-gray-600);
+}
+
+.confirmation-order-id {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--color-gray-100);
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+}
+
+.confirmation-order-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-gray-600);
+}
+
+.confirmation-order-value {
+    font-size: 14px;
+    font-weight: 700;
+    font-family: monospace;
+    letter-spacing: 0.05em;
+}
+
+.confirmation-route {
+    margin-bottom: 20px;
+}
+
+.confirmation-route-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.confirmation-route-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+
+.confirmation-route-dot--green {
+    background: var(--color-green);
+}
+
+.confirmation-route-dot--red {
+    background: #e53935;
+}
+
+.confirmation-route-line {
+    width: 2px;
+    height: 16px;
+    background: var(--color-gray-300);
+    margin-left: 5px;
+    margin-bottom: 4px;
+}
+
+.confirmation-route-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.confirmation-route-address {
+    font-size: 15px;
+    font-weight: 500;
+    margin-top: 2px;
+    color: var(--color-gray-900);
+}
+
+.confirmation-eta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border-radius: var(--radius);
+    margin-bottom: 28px;
+}
+
+.confirmation-eta-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.confirmation-eta-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.confirmation-eta-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-black);
+    margin-top: 2px;
+}
+
+.confirmation-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--color-gray-900);
+}
+
+.confirmation-next-steps {
+    margin-bottom: 28px;
+}
+
+.confirmation-steps-list {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 14px;
+    color: var(--color-gray-700);
+    line-height: 1.7;
+}
+
+.confirmation-steps-list li {
+    margin-bottom: 8px;
+}
+
+.confirmation-steps-list li:last-child {
+    margin-bottom: 0;
+}
+
+.confirmation-support {
+    margin-bottom: 28px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-gray-200);
+}
+
+.confirmation-support-text {
+    font-size: 14px;
+    color: var(--color-gray-600);
+    margin-bottom: 16px;
+}
+
+.confirmation-support-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.confirmation-support-btn {
+    flex: 1;
+    min-width: 140px;
+}
+
+.confirmation-support-note {
+    font-size: 13px;
+    color: var(--color-gray-500);
+}
+
+.confirmation-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.confirmation-error {
+    text-align: center;
+    padding: 48px 24px;
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+}
+
+.confirmation-error-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 16px;
+    background: var(--color-gray-200);
+    color: var(--color-gray-600);
+    font-size: 24px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.confirmation-error-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.confirmation-error-text {
+    font-size: 15px;
+    color: var(--color-gray-600);
+    margin-bottom: 24px;
+}
+
+.confirmation-loading {
+    text-align: center;
+    padding: 48px 24px;
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+}
+
+.confirmation-loading .loading-spinner {
+    margin: 0 auto 16px;
+}
+
+.confirmation-loading p {
+    font-size: 15px;
+    color: var(--color-gray-600);
+}
+
+@media (max-width: 480px) {
+    .confirmation-main {
+        padding: 16px 16px 40px;
+    }
+
+    .confirmation-card {
+        padding: 24px 20px;
+    }
+
+    .confirmation-support-buttons {
+        flex-direction: column;
+    }
+
+    .confirmation-support-btn {
+        width: 100%;
+        min-width: 0;
+    }
+}

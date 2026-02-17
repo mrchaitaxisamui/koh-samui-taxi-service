@@ -1073,10 +1073,9 @@
                             .then(function(r) { return r.json(); })
                             .then(function(data) {
                                 if (data.status === 'accepted') {
-                                    onDone(true, "Driver accepted! You'll receive a call shortly.", {
-                                        pickup: pickupData.address || (pickupData.lat + ', ' + pickupData.lng),
-                                        destination: destinationData.address || (destinationData.lat + ', ' + destinationData.lng)
-                                    });
+                                    stopPolling();
+                                    hideLoading();
+                                    window.location.href = 'booking-confirmation.html?rideId=' + encodeURIComponent(rideId);
                                     return;
                                 }
                                 if (data.status === 'declined') {

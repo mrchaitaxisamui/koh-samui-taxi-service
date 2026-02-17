@@ -194,6 +194,7 @@ async function handleRideStatus(rideId, env) {
     pickup: ride.pickup,
     destination: ride.destination,
     timestamp: ride.timestamp,
+    distanceKm: ride.distanceKm,
   });
 }
 
