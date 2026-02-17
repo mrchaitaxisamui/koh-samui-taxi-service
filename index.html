@@ -28,13 +28,13 @@
                     <a href="#about" class="nav-link">About</a>
                     <a href="#contact" class="nav-link">Contact</a>
                     <div class="nav-menu-cta">
-                        <a href="tel:+66824245439" class="btn btn-primary btn-full">Book Now</a>
+                        <a href="#ride" data-scroll-to-booking class="btn btn-primary btn-full">Book Now</a>
                     </div>
                 </div>
             </div>
             <div class="nav-right">
                 <a href="tel:+66824245439" class="nav-phone btn btn-text" aria-label="Call us">+66 82 424 5439</a>
-                <a href="tel:+66824245439" class="nav-book-desktop btn btn-primary">Book Now</a>
+                <a href="#ride" data-scroll-to-booking class="nav-book-desktop btn btn-primary">Book Now</a>
             </div>
             <button class="menu-toggle" aria-label="Menu" aria-expanded="false" aria-controls="nav-menu">
                 <span></span>
@@ -67,22 +67,39 @@
                   <p class="hero-subtitle"><span class="checkmark">✓</span>No hidden fees</p>
                   <p class="hero-subtitle"><span class="checkmark">✓</span>No tourist traps</p>
                 </div>
-                <div class="booking-form">
-                    <div class="booking-form-buttons">
-                        <a href="tel:+66824245439" class="btn btn-primary btn-full btn-large">
-                            <span>Request a Ride</span>
-                            <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </a>
-                        <a href="https://wa.me/66824245439" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-full">
-                        <svg class="whatsapp-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <form class="booking-form" id="booking-form" novalidate aria-label="Request a ride">
+                    <div class="booking-form-fields">
+                        <label class="booking-field">
+                            <span class="booking-label">Pickup</span>
+                            <input type="text" id="pickup-input" class="booking-input" placeholder="Where are you?" autocomplete="off" required aria-required="true" aria-describedby="pickup-error">
+                            <span class="booking-error" id="pickup-error" role="alert"></span>
+                            <div class="autocomplete-dropdown" id="pickup-dropdown" aria-live="polite" role="listbox" aria-hidden="true"></div>
+                        </label>
+                        <label class="booking-field">
+                            <span class="booking-label">Destination</span>
+                            <input type="text" id="destination-input" class="booking-input" placeholder="Where to?" autocomplete="off" required aria-required="true" aria-describedby="destination-error">
+                            <span class="booking-error" id="destination-error" role="alert"></span>
+                            <div class="autocomplete-dropdown" id="destination-dropdown" aria-live="polite" role="listbox" aria-hidden="true"></div>
+                        </label>
+                        <label class="booking-field">
+                            <span class="booking-label">Phone</span>
+                            <input type="tel" id="phone-input" class="booking-input" placeholder="+66 82 123 4567" required aria-required="true" aria-describedby="phone-error">
+                            <span class="booking-error" id="phone-error" role="alert"></span>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full btn-large btn-submit" id="booking-submit">
+                        <span>Request a Ride</span>
+                        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <a href="https://wa.me/66824245439" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-full">
+                        <svg class="whatsapp-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                         </svg>
                         <span>Message on WhatsApp</span>
-                        </a>
-                    </div>
-                </div>
+                    </a>
+                </form>
                 
                 <p class="hero-note">Available 24/7 across Koh Samui</p>
             </div>
@@ -187,7 +204,7 @@
             <div class="rates-grid" id="rates-grid" aria-live="polite"></div>
             <p class="rate-disclaimer">* Rates are estimated and may vary based on specific drop-off points or night surcharges.</p>
             <div class="rates-cta">
-                <a href="tel:+66824245439" class="btn btn-primary btn-large">Get a Ride Now</a>
+                <a href="#ride" data-scroll-to-booking class="btn btn-primary btn-large">Get a Ride Now</a>
                 <a href="https://wa.me/66824245439" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-large">
                     <svg class="whatsapp-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
@@ -217,7 +234,7 @@
                 </div>
             </div>
             <div class="rates-cta">
-                <a href="tel:+66824245439" class="btn btn-primary btn-large">Book unlimited ride</a>
+                <a href="#ride" data-scroll-to-booking class="btn btn-primary btn-large">Book unlimited ride</a>
                 <a href="https://wa.me/66824245439" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-large">
                     <svg class="whatsapp-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
@@ -538,7 +555,7 @@
             <h2 class="cta-title">Ready to explore Koh Samui?</h2>
             <p class="cta-text">Book your van today and experience the island in comfort and style.</p>
             <div class="cta-buttons">
-                <a href="tel:+66824245439" class="btn btn-light btn-large">
+                <a href="#ride" data-scroll-to-booking class="btn btn-light btn-large">
                     <svg class="phone-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M22 16.92V19.92C22 20.4704 21.7893 20.9996 21.4142 21.3747C21.0391 21.7498 20.5099 21.9605 19.9595 21.9605C17.8042 21.8249 15.7047 21.3201 13.747 20.4682C11.9403 19.6836 10.311 18.5798 8.92893 17.1977C7.5468 15.8156 6.44299 14.1863 5.6584 12.3796C4.80648 10.4219 4.30168 8.3224 4.16608 6.16713C4.16608 5.61671 4.37678 5.08752 4.75186 4.71245C5.12694 4.33737 5.65613 4.12667 6.20655 4.12667H9.20655C10.2358 4.12667 11.0919 4.91245 11.2023 5.93632C11.2958 6.8396 11.4923 7.72942 11.787 8.58667C12.0289 9.29042 11.8643 10.0736 11.3533 10.5846L10.2066 11.7313C11.4003 13.8284 13.1716 15.5997 15.2687 16.7934L16.4154 15.6467C16.9264 15.1357 17.7096 14.9711 18.4133 15.213C19.2706 15.5077 20.1604 15.7042 21.0637 15.7977C22.0875 15.9081 22.8733 16.7642 22.8733 17.7934V16.92H22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
@@ -591,6 +608,16 @@
             </div>
         </div>
     </footer>
+
+    <!-- Loading Overlay: shown when searching for driver -->
+    <div class="loading-overlay" id="loading-overlay" role="dialog" aria-modal="true" aria-labelledby="loading-title" aria-hidden="true">
+        <div class="loading-overlay-backdrop" aria-hidden="true"></div>
+        <div class="loading-overlay-content">
+            <div class="loading-spinner" aria-hidden="true"></div>
+            <h2 class="loading-title" id="loading-title">Searching for Driver...</h2>
+            <p class="loading-status" id="loading-status" aria-live="polite">We're finding a driver near you.</p>
+        </div>
+    </div>
 
     <script id="lottie-script" src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" integrity="sha512-jEnuDt6jfecCjthQAJ+ed0MTVA++5ZKmlUcmDGBv2vUI/REn6FuIdixLNnQT+vKusE2hhTk2is3cFvv5wA+Sgg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <!-- Leaflet Maps and Geosearch for Address Autocomplete -->
@@ -803,6 +830,168 @@
             });
             toSelect.addEventListener('change', updateRatesUI);
             updateRatesUI();
+        })();
+
+        // ========== Booking Form: Autocomplete, Validation, Submit ==========
+        (function initBookingForm() {
+            var PHOTON_URL = 'https://photon.komoot.io/api/?q=';
+            var DEBOUNCE_MS = 250;
+            var TIMEOUT_MS = 120000; // 2 min polling window (Phase 3)
+
+            var form = document.getElementById('booking-form');
+            var pickupInput = document.getElementById('pickup-input');
+            var destinationInput = document.getElementById('destination-input');
+            var phoneInput = document.getElementById('phone-input');
+            var pickupDropdown = document.getElementById('pickup-dropdown');
+            var destinationDropdown = document.getElementById('destination-dropdown');
+            var loadingOverlay = document.getElementById('loading-overlay');
+            var loadingTitle = document.getElementById('loading-title');
+            var loadingStatus = document.getElementById('loading-status');
+
+            var pickupData = null;
+            var destinationData = null;
+            var debounceTimer = null;
+
+            function formatAddress(f) {
+                var p = f.properties;
+                var parts = [p.name].filter(Boolean);
+                if (p.street) parts.push(p.street);
+                if (p.city || p.state) parts.push([p.city, p.state].filter(Boolean).join(', '));
+                if (p.country) parts.push(p.country);
+                return parts.filter(Boolean).join(', ') || p.name || 'Unknown';
+            }
+
+            // Koh Samui bounding box (lon,lat): excludes off-island results
+            var KOH_SAMUI_BBOX = '99.85,9.38,100.12,9.62';
+
+            function searchPhoton(query, callback) {
+                if (!query || query.length < 2) { callback([]); return; }
+                fetch(PHOTON_URL + encodeURIComponent(query) + '&limit=5&bbox=' + KOH_SAMUI_BBOX)
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        callback(data.features || []);
+                    })
+                    .catch(function() { callback([]); });
+            }
+
+            function setupAutocomplete(inputEl, dropdownEl, setData) {
+                inputEl.addEventListener('input', function() {
+                    setData(null);
+                    clearTimeout(debounceTimer);
+                    var q = this.value.trim();
+                    dropdownEl.innerHTML = '';
+                    dropdownEl.setAttribute('aria-hidden', 'true');
+                    if (q.length < 2) return;
+                    debounceTimer = setTimeout(function() {
+                        searchPhoton(q, function(features) {
+                            dropdownEl.innerHTML = '';
+                            if (!features.length) {
+                                dropdownEl.setAttribute('aria-hidden', 'true');
+                                return;
+                            }
+                            features.forEach(function(f, i) {
+                                var item = document.createElement('div');
+                                item.className = 'autocomplete-item';
+                                item.role = 'option';
+                                item.id = dropdownEl.id + '-opt-' + i;
+                                item.textContent = formatAddress(f);
+                                item.tabIndex = 0;
+                                item.dataset.lat = f.geometry.coordinates[1];
+                                item.dataset.lng = f.geometry.coordinates[0];
+                                item.dataset.raw = JSON.stringify({ lat: f.geometry.coordinates[1], lng: f.geometry.coordinates[0], address: formatAddress(f) });
+                                item.addEventListener('click', function() {
+                                    var d = JSON.parse(this.dataset.raw);
+                                    inputEl.value = d.address;
+                                    setData(d);
+                                    dropdownEl.innerHTML = '';
+                                    dropdownEl.setAttribute('aria-hidden', 'true');
+                                });
+                                item.addEventListener('keydown', function(e) {
+                                    if (e.key === 'Enter') { e.preventDefault(); this.click(); }
+                                });
+                                dropdownEl.appendChild(item);
+                            });
+                            dropdownEl.setAttribute('aria-hidden', 'false');
+                        });
+                    }, DEBOUNCE_MS);
+                });
+                inputEl.addEventListener('blur', function() {
+                    setTimeout(function() {
+                        dropdownEl.innerHTML = '';
+                        dropdownEl.setAttribute('aria-hidden', 'true');
+                    }, 150);
+                });
+            }
+            setupAutocomplete(pickupInput, pickupDropdown, function(d) { pickupData = d; });
+            setupAutocomplete(destinationInput, destinationDropdown, function(d) { destinationData = d; });
+
+            function validatePhone(val) {
+                var digits = val.replace(/\D/g, '');
+                return digits.length >= 8 && digits.length <= 15;
+            }
+
+            function showError(fieldId, msg) {
+                var el = document.getElementById(fieldId + '-error');
+                if (el) { el.textContent = msg || ''; el.closest('.booking-field').classList.toggle('has-error', !!msg); }
+            }
+
+            function showLoading(title, status) {
+                loadingTitle.textContent = title || 'Searching for Driver...';
+                loadingStatus.textContent = status || "We're finding a driver near you.";
+                loadingOverlay.classList.add('active');
+                loadingOverlay.setAttribute('aria-hidden', 'false');
+            }
+
+            function hideLoading() {
+                loadingOverlay.classList.remove('active');
+                loadingOverlay.setAttribute('aria-hidden', 'true');
+            }
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && loadingOverlay.classList.contains('active')) {
+                    hideLoading();
+                }
+            });
+            loadingOverlay.querySelector('.loading-overlay-backdrop').addEventListener('click', hideLoading);
+
+            function showResult(success, message) {
+                loadingTitle.textContent = success ? 'Driver Accepted!' : 'No Driver Available';
+                loadingStatus.textContent = message;
+                loadingOverlay.classList.add(success ? 'result-success' : 'result-error');
+                setTimeout(function() {
+                    loadingOverlay.classList.remove('result-success', 'result-error');
+                    hideLoading();
+                }, 4000);
+            }
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                showError('pickup', '');
+                showError('destination', '');
+                showError('phone', '');
+                var valid = true;
+                if (!pickupInput.value.trim()) { showError('pickup', 'Please enter a pickup location.'); valid = false; }
+                if (!destinationInput.value.trim()) { showError('destination', 'Please enter a destination.'); valid = false; }
+                if (!validatePhone(phoneInput.value)) { showError('phone', 'Please enter a valid phone number.'); valid = false; }
+                if (!valid) return;
+
+                showLoading('Searching for Driver...', "We're finding a driver near you.");
+                // Phase 2: POST to Cloudflare Worker /api/ride-request, then poll
+                // Phase 3: Poll for status; show success/decline/timeout
+                // For now, simulate timeout after 8 seconds
+                setTimeout(function() {
+                    showResult(false, 'Request timed out. Please try again or call +66 82 424 5439 directly.');
+                }, 8000);
+            });
+
+            // Scroll-to-form: other "Book" buttons
+            document.querySelectorAll('[data-scroll-to-booking]').forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.getElementById('ride').scrollIntoView({ behavior: 'smooth' });
+                    pickupInput.focus();
+                });
+            });
         })();
     </script>
 </body>
