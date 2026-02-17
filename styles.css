@@ -612,6 +612,99 @@ h1, h2, h3, h4, h5, h6,
     animation: none;
 }
 
+/* Ride confirmed / waiting state – stays open until user closes */
+.loading-overlay-ride-confirmed {
+    text-align: left;
+}
+
+.loading-overlay-ride-confirmed[hidden] {
+    display: none !important;
+}
+
+.ride-confirmed-icon {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 16px;
+    background: var(--color-green);
+    color: var(--color-white);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 52px;
+    text-align: center;
+    border-radius: 50%;
+}
+
+.ride-confirmed-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.ride-confirmed-message {
+    font-size: 15px;
+    color: var(--color-gray-600);
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.ride-confirmed-details {
+    margin: 0 0 16px;
+    padding: 16px;
+    background: var(--color-gray-100);
+    border-radius: var(--radius);
+    font-size: 14px;
+}
+
+.ride-confirmed-details dt {
+    font-weight: 600;
+    color: var(--color-gray-700);
+    margin-top: 10px;
+}
+
+.ride-confirmed-details dt:first-child {
+    margin-top: 0;
+}
+
+.ride-confirmed-details dd {
+    margin: 4px 0 0;
+    color: var(--color-gray-800);
+}
+
+.ride-confirmed-help {
+    font-size: 14px;
+    color: var(--color-gray-600);
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.ride-confirmed-help a {
+    color: var(--color-black);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.ride-confirmed-help a:hover {
+    text-decoration: underline;
+}
+
+.ride-confirmed-close {
+    display: block;
+    width: 100%;
+    padding: 14px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-white);
+    background: var(--color-black);
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+
+.ride-confirmed-close:hover {
+    background: var(--color-gray-800);
+}
+
 .hero-note {
     font-size: 14px;
     color: var(--color-gray-500);

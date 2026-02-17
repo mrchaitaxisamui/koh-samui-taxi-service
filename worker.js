@@ -53,6 +53,15 @@ export default {
     const url = new URL(request.url);
     if (request.method === 'OPTIONS') return corsResponse();
 
+    // Health check for deployment verification (GET / or GET /api/health)
+    if (request.method === 'GET' && (url.pathname === '/' || url.pathname === '/api/health')) {
+      return jsonResponse({
+        ok: true,
+        service: 'mrchai-dispatch',
+        endpoints: ['POST /api/ride-request', 'GET /api/ride-status/:rideId', 'POST /api/telegram-webhook'],
+      });
+    }
+
     // POST /api/ride-request
     if (request.method === 'POST' && url.pathname === '/api/ride-request') {
       return handleRideRequest(request, env);
@@ -128,7 +137,11 @@ async function handleRideRequest(request, env) {
 
   const token = env.TELEGRAM_BOT_TOKEN;
   const chatId = env.TELEGRAM_DRIVER_CHAT_ID;
-  if (token && chatId) {
+  if (!token || !chatId) {
+    // No Telegram config: ride is stored but drivers won't be notified. Set secrets in production.
+    if (!token) console.error('TELEGRAM_BOT_TOKEN not set. Run: npx wrangler secret put TELEGRAM_BOT_TOKEN');
+    if (!chatId) console.error('TELEGRAM_DRIVER_CHAT_ID not set in wrangler.toml [vars]');
+  } else {
     const text = [
       '🚕 NEW RIDE REQUEST',
       `📍 Pickup: ${pickupAddress}`,
@@ -145,7 +158,7 @@ async function handleRideRequest(request, env) {
       ],
     };
     try {
-      await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      const tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -154,8 +167,11 @@ async function handleRideRequest(request, env) {
           reply_markup: keyboard,
         }),
       });
+      const tgJson = await tgRes.json().catch(() => ({}));
+      if (!tgJson.ok) {
+        console.error('Telegram sendMessage failed:', tgJson.description || tgRes.status, tgJson);
+      }
     } catch (e) {
-      // Log but don't fail the request; ride is already stored
       console.error('Telegram send failed', e);
     }
   }
