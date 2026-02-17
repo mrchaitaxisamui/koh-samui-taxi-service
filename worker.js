@@ -140,6 +140,7 @@ async function handleRideRequest(request, env) {
       ? (async () => {
           const text = [
             '🚕 NEW RIDE REQUEST',
+            `🆔 Booking ID: ${rideId}`,
             `📍 Pickup: ${pickupAddress}`,
             `🏁 Destination: ${destAddress}`,
             `📱 Customer: ${formatPhone(phone)}`,
