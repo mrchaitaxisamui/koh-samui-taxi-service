@@ -133,48 +133,53 @@ async function handleRideRequest(request, env) {
     distanceKm,
   };
 
-  await env.RIDES.put(rideId, JSON.stringify(ride), { expirationTtl: 60 * 60 * 24 }); // 24h TTL
-
   const token = env.TELEGRAM_BOT_TOKEN;
   const chatId = env.TELEGRAM_DRIVER_CHAT_ID;
-  if (!token || !chatId) {
-    // No Telegram config: ride is stored but drivers won't be notified. Set secrets in production.
-    if (!token) console.error('TELEGRAM_BOT_TOKEN not set. Run: npx wrangler secret put TELEGRAM_BOT_TOKEN');
-    if (!chatId) console.error('TELEGRAM_DRIVER_CHAT_ID not set in wrangler.toml [vars]');
-  } else {
-    const text = [
-      '🚕 NEW RIDE REQUEST',
-      `📍 Pickup: ${pickupAddress}`,
-      `🏁 Destination: ${destAddress}`,
-      `📱 Customer: ${formatPhone(phone)}`,
-      `⏰ Distance: ${distanceKm} km`,
-    ].join('\n');
-    const keyboard = {
-      inline_keyboard: [
-        [
-          { text: '✅ Accept', callback_data: `accept:${rideId}` },
-          { text: '❌ Decline', callback_data: `decline:${rideId}` },
-        ],
-      ],
-    };
-    try {
-      const tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text,
-          reply_markup: keyboard,
-        }),
-      });
-      const tgJson = await tgRes.json().catch(() => ({}));
-      if (!tgJson.ok) {
-        console.error('Telegram sendMessage failed:', tgJson.description || tgRes.status, tgJson);
-      }
-    } catch (e) {
-      console.error('Telegram send failed', e);
-    }
-  }
+  const telegramPromise =
+    token && chatId
+      ? (async () => {
+          const text = [
+            '🚕 NEW RIDE REQUEST',
+            `📍 Pickup: ${pickupAddress}`,
+            `🏁 Destination: ${destAddress}`,
+            `📱 Customer: ${formatPhone(phone)}`,
+            `⏰ Distance: ${distanceKm} km`,
+          ].join('\n');
+          const keyboard = {
+            inline_keyboard: [
+              [
+                { text: '✅ Accept', callback_data: `accept:${rideId}` },
+                { text: '❌ Decline', callback_data: `decline:${rideId}` },
+              ],
+            ],
+          };
+          try {
+            const tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: chatId,
+                text,
+                reply_markup: keyboard,
+              }),
+            });
+            const tgJson = await tgRes.json().catch(() => ({}));
+            if (!tgJson.ok) {
+              console.error('Telegram sendMessage failed:', tgJson.description || tgRes.status, tgJson);
+            }
+          } catch (e) {
+            console.error('Telegram send failed', e);
+          }
+        })()
+      : Promise.resolve();
+  if (!token) console.error('TELEGRAM_BOT_TOKEN not set. Run: npx wrangler secret put TELEGRAM_BOT_TOKEN');
+  if (!chatId) console.error('TELEGRAM_DRIVER_CHAT_ID not set in wrangler.toml [vars]');
+
+  // Run KV put and Telegram send in parallel so drivers get the message as fast as possible
+  await Promise.all([
+    env.RIDES.put(rideId, JSON.stringify(ride), { expirationTtl: 60 * 60 * 24 }), // 24h TTL
+    telegramPromise,
+  ]);
 
   return jsonResponse({ rideId, status: 'pending' });
 }
@@ -217,8 +222,34 @@ async function handleTelegramWebhook(request, env) {
     return new Response('OK', { status: 200 });
   }
   ride.status = action === 'accept' ? 'accepted' : 'declined';
-  await env.RIDES.put(rideId, JSON.stringify(ride), { expirationTtl: 60 * 60 * 24 });
-  await answerCallback(env.TELEGRAM_BOT_TOKEN, cb.id, action === 'accept' ? 'Accepted!' : 'Declined');
+  const token = env.TELEGRAM_BOT_TOKEN;
+  const answerText = action === 'accept' ? 'Accepted!' : 'Declined';
+  // Update KV and give driver immediate feedback in parallel
+  await Promise.all([
+    env.RIDES.put(rideId, JSON.stringify(ride), { expirationTtl: 60 * 60 * 24 }),
+    answerCallback(token, cb.id, answerText),
+  ]);
+  // Edit the message to remove buttons and show result so driver sees clear feedback
+  const chatId = cb.message?.chat?.id;
+  const messageId = cb.message?.message_id;
+  const suffix = action === 'accept' ? '\n\n— ✅ Accepted' : '\n\n— ❌ Declined';
+  const newText = (cb.message?.text || '') + suffix;
+  if (token && chatId != null && messageId != null) {
+    try {
+      await fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          message_id: messageId,
+          text: newText,
+          reply_markup: { inline_keyboard: [] },
+        }),
+      });
+    } catch (e) {
+      console.error('editMessageText failed', e);
+    }
+  }
   return new Response('OK', { status: 200 });
 }
 
