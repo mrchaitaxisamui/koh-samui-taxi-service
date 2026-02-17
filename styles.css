@@ -1025,12 +1025,10 @@ a {
 
 .package-header {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+    flex-direction: column;
+    align-items: stretch;
     width: 100%;
-    padding: 20px 20px 16px;
-    padding-top: 24px;
+    padding: 0;
     text-align: left;
     background: none;
     border: none;
@@ -1050,12 +1048,21 @@ a {
 }
 
 .package-subheading-img {
-    width: 56px;
-    height: 56px;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 10;
     flex-shrink: 0;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     object-fit: cover;
     background: var(--color-gray-200);
+}
+
+.package-header-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
 }
 
 .package-header-text {
