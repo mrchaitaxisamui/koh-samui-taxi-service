@@ -8,7 +8,7 @@
  *   POST /api/telegram-webhook   - Handle Accept/Decline callback from Telegram
  */
 
-import { parsePhoneNumberFromString, isValidPhoneNumber } from 'libphonenumber-js/min';
+import { parsePhoneNumberFromString } from 'libphonenumber-js/min';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -100,8 +100,11 @@ async function handleRideRequest(request, env) {
   const destLat = Number(destination.lat);
   const destLng = Number(destination.lng);
   const phoneRaw = String(customerPhone || '').trim();
-  const parsed = parsePhoneNumberFromString(phoneRaw);
-  if (!parsed || !isValidPhoneNumber(phoneRaw)) {
+  const digits = phoneRaw.replace(/\D/g, '');
+  // Treat as international: prepend + if missing (e.g. "49 17..." -> +49 Germany)
+  const toParse = phoneRaw.startsWith('+') ? phoneRaw : '+' + digits;
+  const parsed = parsePhoneNumberFromString(toParse);
+  if (!parsed || !parsed.isValid()) {
     return jsonResponse({
       error: 'Invalid or unsupported phone number. Use international format with country code (e.g. +66 82 123 4567, +44 7700 900000).',
     }, 400);
