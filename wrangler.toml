@@ -1,0 +1,20 @@
+# Mr Chai Dispatch - Cloudflare Worker
+# Deploy: npx wrangler deploy
+# 1. Create KV namespace: npx wrangler kv:namespace create RIDES
+#    Put the returned id in [[kv_namespaces]] below.
+# 2. Set bot token as secret (never commit): npx wrangler secret put TELEGRAM_BOT_TOKEN
+# 3. Set Telegram webhook (after deploy):
+#    https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://<your-worker>.workers.dev/api/telegram-webhook
+# 4. In index.html set API_BASE to your worker URL (e.g. https://mrchai-dispatch.<subdomain>.workers.dev)
+
+name = "mrchai-dispatch"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[[kv_namespaces]]
+binding = "RIDES"
+id = "4873427201684cafbac778dc3c09ba86"
+
+[vars]
+TELEGRAM_DRIVER_CHAT_ID = "-5178679297"
+# TELEGRAM_BOT_TOKEN must be set as a secret: npx wrangler secret put TELEGRAM_BOT_TOKEN

@@ -837,6 +837,9 @@
             var PHOTON_URL = 'https://photon.komoot.io/api/?q=';
             var DEBOUNCE_MS = 250;
             var TIMEOUT_MS = 120000; // 2 min polling window (Phase 3)
+            var POLL_INTERVAL_MS = 5000;
+            // Set to your Cloudflare Worker URL, e.g. https://mrchai-dispatch.<your-subdomain>.workers.dev
+            var API_BASE = 'https://mrchai-dispatch.kohsamui-taxi.workers.dev';
 
             var form = document.getElementById('booking-form');
             var pickupInput = document.getElementById('pickup-input');
@@ -972,16 +975,77 @@
                 var valid = true;
                 if (!pickupInput.value.trim()) { showError('pickup', 'Please enter a pickup location.'); valid = false; }
                 if (!destinationInput.value.trim()) { showError('destination', 'Please enter a destination.'); valid = false; }
+                if (!pickupData) { showError('pickup', 'Please select a pickup from the suggestions.'); valid = false; }
+                if (!destinationData) { showError('destination', 'Please select a destination from the suggestions.'); valid = false; }
                 if (!validatePhone(phoneInput.value)) { showError('phone', 'Please enter a valid phone number.'); valid = false; }
                 if (!valid) return;
 
+                if (!API_BASE) {
+                    showResult(false, 'Dispatch API not configured. Please call +66 82 424 5439 to book.');
+                    return;
+                }
+
                 showLoading('Searching for Driver...', "We're finding a driver near you.");
-                // Phase 2: POST to Cloudflare Worker /api/ride-request, then poll
-                // Phase 3: Poll for status; show success/decline/timeout
-                // For now, simulate timeout after 8 seconds
-                setTimeout(function() {
-                    showResult(false, 'Request timed out. Please try again or call +66 82 424 5439 directly.');
-                }, 8000);
+                var startTime = Date.now();
+                var pollTimer = null;
+
+                function stopPolling() {
+                    if (pollTimer) clearTimeout(pollTimer);
+                    pollTimer = null;
+                }
+
+                function onDone(success, message) {
+                    stopPolling();
+                    showResult(success, message);
+                }
+
+                fetch(API_BASE + '/api/ride-request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        pickup: { lat: pickupData.lat, lng: pickupData.lng, address: pickupData.address },
+                        destination: { lat: destinationData.lat, lng: destinationData.lng, address: destinationData.address },
+                        customerPhone: phoneInput.value.trim()
+                    })
+                })
+                .then(function(r) { return r.json().then(function(j) { return { ok: r.ok, status: r.status, json: j }; }); })
+                .then(function(res) {
+                    if (!res.ok) {
+                        onDone(false, res.json.error || 'Request failed. Please try again or call +66 82 424 5439.');
+                        return;
+                    }
+                    var rideId = res.json.rideId;
+                    if (!rideId) {
+                        onDone(false, 'Invalid response. Please try again or call +66 82 424 5439.');
+                        return;
+                    }
+                    function poll() {
+                        if (Date.now() - startTime > TIMEOUT_MS) {
+                            onDone(false, 'Request timed out. Please try again or call +66 82 424 5439 directly.');
+                            return;
+                        }
+                        fetch(API_BASE + '/api/ride-status/' + rideId)
+                            .then(function(r) { return r.json(); })
+                            .then(function(data) {
+                                if (data.status === 'accepted') {
+                                    onDone(true, "Driver accepted! You'll receive a call shortly.");
+                                    return;
+                                }
+                                if (data.status === 'declined') {
+                                    onDone(false, 'No drivers available. Please try again or call +66 82 424 5439 directly.');
+                                    return;
+                                }
+                                pollTimer = setTimeout(poll, POLL_INTERVAL_MS);
+                            })
+                            .catch(function() {
+                                pollTimer = setTimeout(poll, POLL_INTERVAL_MS);
+                            });
+                    }
+                    poll();
+                })
+                .catch(function() {
+                    onDone(false, 'Network error. Please try again or call +66 82 424 5439 directly.');
+                });
             });
 
             // Scroll-to-form: other "Book" buttons
