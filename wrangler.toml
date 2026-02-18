@@ -19,7 +19,8 @@ id = "4873427201684cafbac778dc3c09ba86"
 TELEGRAM_DRIVER_CHAT_ID = "-5178679297"
 # Map Telegram user ID (string) -> driver phone (E.164, e.g. +66824245439). To find IDs: set SHOW_DRIVER_ID = "1", deploy, have each driver accept a ride — their ID appears in the group message. Then set DRIVER_PHONES and set SHOW_DRIVER_ID = "0".
 # Example: DRIVER_PHONES = "{\"123456789\":\"+66824245439\",\"987654321\":\"+66811234567\"}"
-DRIVER_PHONES = "{}"
+# Driver 1 (ID 5391534676). Add driver 2 & 3 when you have their IDs.
+DRIVER_PHONES = "{\"5391534676\":\"+66824245439\"}"
 # Set to "1" to show each driver's Telegram ID in the group when they accept (so you can copy IDs into DRIVER_PHONES). Set to "0" or remove after.
 SHOW_DRIVER_ID = "1"
 # TELEGRAM_BOT_TOKEN must be set as a secret: npx wrangler secret put TELEGRAM_BOT_TOKEN
