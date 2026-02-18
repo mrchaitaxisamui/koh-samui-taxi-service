@@ -1042,7 +1042,14 @@
                 var DEBOUNCE_MS = 220;
                 var debounceTimers = { pickup: null, destination: null };
 
-                function renderDropdown(dropdownEl, predictions, onSelect) {
+                function positionDropdownUnderInput(dropdownEl, inputEl) {
+                    var rect = inputEl.getBoundingClientRect();
+                    dropdownEl.style.top = (rect.bottom + 4) + 'px';
+                    dropdownEl.style.left = rect.left + 'px';
+                    dropdownEl.style.width = Math.max(rect.width, 280) + 'px';
+                }
+
+                function renderDropdown(dropdownEl, predictions, onSelect, inputEl) {
                     dropdownEl.innerHTML = '';
                     if (!predictions || predictions.length === 0) {
                         dropdownEl.setAttribute('aria-hidden', 'true');
@@ -1062,6 +1069,7 @@
                         });
                         dropdownEl.appendChild(item);
                     });
+                    if (inputEl) positionDropdownUnderInput(dropdownEl, inputEl);
                     dropdownEl.setAttribute('aria-hidden', 'false');
                 }
 
@@ -1112,7 +1120,7 @@
                                             setData({ lat: detail.lat, lng: detail.lng, address: detail.address });
                                             updateBookingMap();
                                         });
-                                    });
+                                    }, inputEl);
                                 })
                                 .catch(function() { hideDropdown(dropdownEl); });
                         }, DEBOUNCE_MS);

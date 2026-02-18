@@ -553,12 +553,9 @@ h1, h2, h3, h4, h5, h6,
     margin-top: 0;
 }
 
-/* Autocomplete dropdown */
+/* Autocomplete dropdown – fixed so it isn’t clipped by modal overflow; top/left/width set by JS */
 .autocomplete-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
+    position: fixed;
     margin-top: 4px;
     background: var(--color-white);
     border: 2px solid var(--color-gray-300);
@@ -566,11 +563,11 @@ h1, h2, h3, h4, h5, h6,
     box-shadow: var(--shadow-lg);
     max-height: 220px;
     overflow-y: auto;
-    z-index: 100;
+    z-index: 9100; /* above modal (9000) */
 }
 
 .autocomplete-dropdown[aria-hidden="true"] {
-    display: none;
+    display: none !important; /* ensure hidden when no suggestions */
 }
 
 .autocomplete-item {
