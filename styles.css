@@ -567,7 +567,13 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .autocomplete-dropdown[aria-hidden="true"] {
-    display: none !important; /* ensure hidden when no suggestions */
+    display: none !important;
+}
+
+/* when visible, ensure dropdown is shown (overrides any parent clipping) */
+.autocomplete-dropdown[aria-hidden="false"] {
+    display: block !important;
+    visibility: visible !important;
 }
 
 .autocomplete-item {

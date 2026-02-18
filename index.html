@@ -1050,32 +1050,50 @@
                 }
 
                 function renderDropdown(dropdownEl, predictions, onSelect, inputEl) {
+                    if (!dropdownEl) return;
                     dropdownEl.innerHTML = '';
-                    if (!predictions || predictions.length === 0) {
+                    var list = Array.isArray(predictions) ? predictions : [];
+                    if (list.length === 0) {
                         dropdownEl.setAttribute('aria-hidden', 'true');
+                        dropdownEl.style.display = '';
+                        dropdownEl.style.visibility = '';
                         return;
                     }
-                    predictions.forEach(function(p, i) {
+                    list.forEach(function(p, i) {
                         var item = document.createElement('div');
                         item.className = 'autocomplete-item';
                         item.setAttribute('role', 'option');
                         item.id = dropdownEl.id + '-item-' + i;
-                        item.textContent = p.description || '';
-                        item.dataset.placeId = p.place_id || '';
+                        item.textContent = (p && p.description) ? String(p.description) : '';
+                        item.dataset.placeId = (p && p.place_id) ? String(p.place_id) : '';
                         item.tabIndex = 0;
-                        item.addEventListener('click', function() { onSelect(p); });
+                        function selectItem() {
+                            if (!p || !p.place_id) return;
+                            onSelect(p);
+                        }
+                        item.addEventListener('mousedown', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            selectItem();
+                        });
+                        item.addEventListener('click', function(e) { e.preventDefault(); selectItem(); });
                         item.addEventListener('keydown', function(e) {
-                            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(p); }
+                            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectItem(); }
                         });
                         dropdownEl.appendChild(item);
                     });
                     if (inputEl) positionDropdownUnderInput(dropdownEl, inputEl);
                     dropdownEl.setAttribute('aria-hidden', 'false');
+                    dropdownEl.style.display = 'block';
+                    dropdownEl.style.visibility = 'visible';
                 }
 
                 function hideDropdown(dropdownEl) {
+                    if (!dropdownEl) return;
                     dropdownEl.innerHTML = '';
                     dropdownEl.setAttribute('aria-hidden', 'true');
+                    dropdownEl.style.display = '';
+                    dropdownEl.style.visibility = '';
                 }
 
                 function fetchPlaceDetails(placeId, done) {
@@ -1105,9 +1123,13 @@
                             debounceTimers[key] = null;
                             if (val.length < 2) { hideDropdown(dropdownEl); return; }
                             fetch(API_BASE + '/api/places-autocomplete?input=' + encodeURIComponent(val))
-                                .then(function(r) { return r.json(); })
+                                .then(function(r) {
+                                    if (!r.ok) return { predictions: [] };
+                                    return r.json().then(function(data) { return data || {}; }).catch(function() { return {}; });
+                                })
                                 .then(function(data) {
-                                    var list = (data && data.predictions) ? data.predictions : [];
+                                    var list = (data && data.predictions);
+                                    if (!Array.isArray(list)) list = [];
                                     renderDropdown(dropdownEl, list, function(p) {
                                         hideDropdown(dropdownEl);
                                         showErr('');
@@ -1127,15 +1149,15 @@
                     });
 
                     inputEl.addEventListener('blur', function() {
-                        setTimeout(function() { hideDropdown(dropdownEl); }, 180);
+                        setTimeout(function() { hideDropdown(dropdownEl); }, 280);
                     });
                     inputEl.addEventListener('focus', function() {
                         if (dropdownEl.children.length) dropdownEl.setAttribute('aria-hidden', 'false');
                     });
                 }
 
-                setupInput(pickupInput, pickupDropdown, true);
-                setupInput(destinationInput, destinationDropdown, false);
+                if (pickupInput && pickupDropdown) setupInput(pickupInput, pickupDropdown, true);
+                if (destinationInput && destinationDropdown) setupInput(destinationInput, destinationDropdown, false);
             }
 
             if (GOOGLE_MAPS_API_KEY) {

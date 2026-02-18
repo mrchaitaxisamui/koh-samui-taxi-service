@@ -165,11 +165,11 @@ async function handlePlacesAutocomplete(url, env) {
   const params = new URLSearchParams({
     input: input.trim(),
     key,
-    types: 'geocode',
     components: 'country:th',
     locationrestriction: `rectangle:${KOH_SAMUI_RECT}`,
     language: 'en',
   });
+  /* Omit types so we get both addresses (geocode) and establishments (bars, hotels, etc. e.g. Ark Bar) */
   try {
     const res = await fetch(`https://maps.googleapis.com/maps/api/place/autocomplete/json?${params.toString()}`);
     const data = await res.json().catch(() => ({}));
