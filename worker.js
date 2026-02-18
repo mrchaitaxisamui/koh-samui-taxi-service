@@ -340,22 +340,19 @@ async function handleRideRequest(request, env) {
       ? (async () => {
           const pickupMapsUrl = `https://www.google.com/maps?q=${encodeURIComponent(pickupLat)},${encodeURIComponent(pickupLng)}`;
           const destMapsUrl = `https://www.google.com/maps?q=${encodeURIComponent(destLat)},${encodeURIComponent(destLng)}`;
-          // Escape for Telegram Markdown link text so [text](url) is valid
-          const escapeMd = (s) =>
+          // Escape for Telegram HTML so link text is safe (links open in Google Maps)
+          const escapeHtml = (s) =>
             String(s)
-              .replace(/\\/g, '\\\\')
-              .replace(/\]/g, '\\]')
-              .replace(/\)/g, '\\)')
-              .replace(/_/g, '\\_')
-              .replace(/\*/g, '\\*')
-              .replace(/`/g, '\\`');
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;');
           const text = [
             '🚕 NEW RIDE REQUEST',
-            `🆔 Booking ID: ${rideId}`,
-            `📍 Pickup: [${escapeMd(pickupAddress)}](${pickupMapsUrl})`,
-            `🏁 Destination: [${escapeMd(destAddress)}](${destMapsUrl})`,
-            `👤 Name: ${ride.customerName || '—'}`,
-            `📱 Customer: ${parsed.format('INTERNATIONAL')}`,
+            `🆔 Booking ID: ${escapeHtml(rideId)}`,
+            `📍 Pickup: <a href="${pickupMapsUrl}">${escapeHtml(pickupAddress)}</a>`,
+            `🏁 Destination: <a href="${destMapsUrl}">${escapeHtml(destAddress)}</a>`,
+            `👤 Name: ${escapeHtml(ride.customerName || '—')}`,
+            `📱 Customer: ${escapeHtml(parsed.format('INTERNATIONAL'))}`,
             `⏰ Distance: ${distanceKm} km`,
           ].join('\n');
           const keyboard = {
@@ -378,7 +375,7 @@ async function handleRideRequest(request, env) {
               body: JSON.stringify({
                 chat_id: chatId,
                 text,
-                parse_mode: 'Markdown',
+                parse_mode: 'HTML',
                 reply_markup: keyboard,
               }),
             });
@@ -474,6 +471,7 @@ async function handleTelegramWebhook(request, env) {
           chat_id: chatId,
           message_id: messageId,
           text: newText,
+          parse_mode: 'HTML',
           reply_markup: { inline_keyboard: [] },
         }),
       });
