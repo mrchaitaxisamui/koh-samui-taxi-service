@@ -60,7 +60,7 @@ export default {
       return jsonResponse({
         ok: true,
         service: 'mrchai-dispatch',
-        endpoints: ['POST /api/ride-request', 'GET /api/ride-status/:rideId', 'POST /api/telegram-webhook', 'GET /api/places-autocomplete', 'GET /api/place-details', 'GET /api/geocode', 'GET /api/static-map'],
+        endpoints: ['POST /api/ride-request', 'GET /api/ride-status/:rideId', 'POST /api/telegram-webhook', 'GET /api/places-autocomplete', 'GET /api/place-details', 'GET /api/geocode', 'GET /api/static-map', 'GET /api/distance-matrix'],
       });
     }
 
@@ -93,6 +93,10 @@ export default {
     // GET /api/static-map?pickup_lat=...&pickup_lng=...&dest_lat=...&dest_lng=... — static map image (key server-side)
     if (request.method === 'GET' && url.pathname === '/api/static-map') {
       return handleStaticMap(url, env);
+    }
+    // GET /api/distance-matrix?origins=lat,lng&destinations=lat,lng — driving distance in km (key server-side)
+    if (request.method === 'GET' && url.pathname === '/api/distance-matrix') {
+      return handleDistanceMatrix(url, env);
     }
 
     return jsonResponse({ error: 'Not found' }, 404);
@@ -232,6 +236,57 @@ async function handlePlaceDetails(url, env) {
   } catch (e) {
     console.error('Place details fetch failed', e);
     return jsonResponse({ error: 'Place details unavailable.' }, 502);
+  }
+}
+
+/** GET /api/distance-matrix?origins=lat,lng&destinations=lat,lng — driving distance in km via Google Distance Matrix (key server-side). */
+async function handleDistanceMatrix(url, env) {
+  const origins = url.searchParams.get('origins');
+  const destinations = url.searchParams.get('destinations');
+  if (!origins || !destinations || typeof origins !== 'string' || typeof destinations !== 'string') {
+    return jsonResponse({ error: 'Missing origins or destinations (use lat,lng)' }, 400);
+  }
+  const key = env.GOOGLE_MAPS_API_KEY;
+  if (!key) {
+    return jsonResponse({ error: 'Distance Matrix not configured' }, 503);
+  }
+  const params = new URLSearchParams({
+    origins: origins.trim(),
+    destinations: destinations.trim(),
+    key,
+    mode: 'driving',
+  });
+  try {
+    const res = await fetch(`https://maps.googleapis.com/maps/api/distancematrix/json?${params.toString()}`);
+    const data = await res.json().catch(() => ({}));
+    const status = data.status || 'UNKNOWN';
+    if (status === 'OK') {
+      const rows = data.rows;
+      if (Array.isArray(rows) && rows.length > 0) {
+        const elements = rows[0].elements;
+        if (Array.isArray(elements) && elements.length > 0) {
+          const el = elements[0];
+          if (el.status === 'OK' && el.distance && typeof el.distance.value === 'number') {
+            const distanceKm = Math.round((el.distance.value / 1000) * 10) / 10;
+            return jsonResponse({ distance_km: distanceKm });
+          }
+        }
+      }
+      return jsonResponse({ error: 'No route found' }, 502);
+    }
+    if (status === 'ZERO_RESULTS' || status === 'NOT_FOUND') {
+      return jsonResponse({ error: 'No route found' }, 502);
+    }
+    if (status === 'REQUEST_DENIED') {
+      return jsonResponse({ error: 'Distance Matrix denied. Enable Distance Matrix API and check key.' }, 502);
+    }
+    if (status === 'OVER_QUERY_LIMIT') {
+      return jsonResponse({ error: 'Distance Matrix limit reached. Try again later.' }, 502);
+    }
+    return jsonResponse({ error: 'Distance Matrix failed (' + status + ')' }, 502);
+  } catch (e) {
+    console.error('Distance Matrix fetch failed', e);
+    return jsonResponse({ error: 'Distance Matrix unavailable' }, 502);
   }
 }
 

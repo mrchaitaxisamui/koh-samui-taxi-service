@@ -635,7 +635,7 @@
                     </label>
                 </div>
                 <button type="submit" class="btn btn-primary btn-full btn-large btn-submit" id="booking-submit">
-                    <span>Request a Ride</span>
+                    <span class="btn-submit-text" id="booking-submit-text">Request a Ride</span>
                     <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
@@ -916,6 +916,8 @@
             var rideConfirmedPickup = document.getElementById('ride-confirmed-pickup');
             var rideConfirmedDestination = document.getElementById('ride-confirmed-destination');
             var rideConfirmedCloseBtn = document.getElementById('ride-confirmed-close');
+            var bookingSubmitBtn = document.getElementById('booking-submit');
+            var bookingSubmitText = document.getElementById('booking-submit-text');
 
             var pickupData = null;
             var destinationData = null;
