@@ -475,6 +475,7 @@ async function handleRideStatus(rideId, env) {
     timestamp: ride.timestamp,
     distanceKm: ride.distanceKm,
     etaMinutes: ride.etaMinutes ?? null,
+    driverName: ride.driverName ?? null,
   });
 }
 
@@ -512,6 +513,11 @@ async function handleTelegramWebhook(request, env, ctx) {
   }
   ride.status = action === 'accept' ? 'accepted' : 'declined';
   if (action === 'accept' && validEta) ride.etaMinutes = etaMinutes;
+  if (action === 'accept' && cb.from) {
+    const first = (cb.from.first_name || '').trim();
+    const last = (cb.from.last_name || '').trim();
+    ride.driverName = [first, last].filter(Boolean).join(' ') || null;
+  }
   const token = env.TELEGRAM_BOT_TOKEN;
   const answerText = action === 'accept' ? `Accepted! ETA ${ride.etaMinutes || 15} min` : 'Declined';
   // Update KV and give driver immediate feedback in parallel - must complete before returning

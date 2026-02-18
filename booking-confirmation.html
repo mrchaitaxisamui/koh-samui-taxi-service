@@ -31,6 +31,11 @@
                     <span class="confirmation-order-value" id="booking-id">—</span>
                 </div>
 
+                <div class="confirmation-driver" id="confirmation-driver" hidden>
+                    <span class="confirmation-driver-label">Your driver</span>
+                    <span class="confirmation-driver-value" id="driver-name">—</span>
+                </div>
+
                 <div class="confirmation-route">
                     <div class="confirmation-route-row">
                         <span class="confirmation-route-dot confirmation-route-dot--green" aria-hidden="true"></span>
@@ -61,7 +66,7 @@
                 <div class="confirmation-next-steps">
                     <h2 class="confirmation-section-title">What happens next?</h2>
                     <ol class="confirmation-steps-list">
-                        <li><strong>Your driver is on the way.</strong> A driver has already accepted your request and is heading to your location now.</li>
+                        <li><strong>Your driver is on the way.</strong> <span id="driver-copy">A driver has already accepted your request</span> and is heading to your location now.</li>
                         <li><strong>We´re here to help.</strong> If you are in a croded area or the driver has troube locating you, we will reach out to you via WhatsApp.</li>
                         <li><strong>Stay connected.</strong> To ensure you receive real-time updates and location pings, please maintain a stable internet connection. If you're in a crowded area, feel free to send us a photo of your surroundings via WhatsApp for a faster pickup.</li>
                     </ol>
@@ -172,6 +177,20 @@
                     }
 
                     document.getElementById('booking-id').textContent = rideId;
+
+                    var driverName = ride.driverName && String(ride.driverName).trim();
+                    var driverEl = document.getElementById('confirmation-driver');
+                    var driverNameEl = document.getElementById('driver-name');
+                    if (driverName) {
+                        driverNameEl.textContent = driverName;
+                        driverEl.hidden = false;
+                        var driverCopyEl = document.getElementById('driver-copy');
+                        if (driverCopyEl) driverCopyEl.textContent = driverName + ' has already accepted your request';
+                    } else {
+                        driverEl.hidden = true;
+                        var driverCopyEl = document.getElementById('driver-copy');
+                        if (driverCopyEl) driverCopyEl.textContent = 'A driver has already accepted your request';
+                    }
 
                     var pickupAddr = ride.pickup && ride.pickup.address ? ride.pickup.address : 'Your pickup';
                     var destAddr = ride.destination && ride.destination.address ? ride.destination.address : 'Your destination';

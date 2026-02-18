@@ -2478,6 +2478,28 @@ h1, h2, h3, h4, h5, h6,
     letter-spacing: 0.05em;
 }
 
+.confirmation-driver {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--color-gray-100);
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+}
+
+.confirmation-driver-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-gray-600);
+}
+
+.confirmation-driver-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-black);
+}
+
 .confirmation-route {
     margin-bottom: 20px;
 }
