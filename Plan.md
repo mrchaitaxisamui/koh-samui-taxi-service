@@ -20,16 +20,9 @@ Building a functional taxi booking flow that replaces static "Book Now" buttons 
 ### 1.2 Add Address Autocomplete Form ✅
 **Implementation**: 
 - Create booking form with two inputs: "Pickup Location" and "Destination"
-- Integrate Leaflet maps and Geosearch (Photon API) for real-time address autocomplete
+- Google Maps JavaScript API + Places (autocomplete and booking modal map)
+- Set `window.__GOOGLE_MAPS_API_KEY` for Maps and Places; key can also be proxied via worker for autocomplete
 - Add form validation and error handling
-
-**Required CDN imports**:
-```html
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.8.0/dist/geosearch.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet-geosearch@3.8.0/dist/geosearch.umd.js"></script>
-```
 
 ### 1.3 Add Loading Overlay ✅
 **Component**: "Searching for Driver..." overlay
@@ -127,8 +120,8 @@ koh-samui-taxi-service/
 - `POST /api/telegram-webhook` - Handle Telegram callbacks
 
 ### Key Technologies
-- **Geocoding**: OpenStreetMap/Photon (free, no API key required)
-- **Maps**: Leaflet.js (lightweight, open source)
+- **Maps & autocomplete**: Google Maps JavaScript API + Places API (booking map and address suggestions)
+- **Geocoding** (e.g. "Use my location"): Worker-proxied Google Geocoding API (key server-side)
 - **Backend**: Cloudflare Workers (serverless, edge deployment)
 - **Notifications**: Telegram Bot API (reliable, free)
 - **State Management**: Cloudflare KV (persistent, fast)
@@ -155,7 +148,7 @@ koh-samui-taxi-service/
 
 ### Week 1: Frontend Development ✅
 - [x] Replace static buttons with booking form
-- [x] Integrate Leaflet/Geosearch for autocomplete
+- [x] Integrate Google Maps API + Places for autocomplete and map
 - [x] Style form components to match existing design
 - [x] Implement loading overlay
 
