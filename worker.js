@@ -340,6 +340,7 @@ async function handleRideRequest(request, env, ctx) {
     destination = {},
     customerName,
     customerPhone,
+    estimatedPrice,
   } = body;
   const pickupLat = Number(pickup.lat);
   const pickupLng = Number(pickup.lng);
@@ -377,6 +378,9 @@ async function handleRideRequest(request, env, ctx) {
   const pickupAddress = pickup.address || `${pickupLat.toFixed(5)}, ${pickupLng.toFixed(5)}`;
   const destAddress = destination.address || `${destLat.toFixed(5)}, ${destLng.toFixed(5)}`;
 
+  const priceThb = typeof estimatedPrice === 'number' && Number.isFinite(estimatedPrice) && estimatedPrice >= 0
+    ? estimatedPrice
+    : null;
   const ride = {
     rideId,
     status: 'pending',
@@ -386,6 +390,7 @@ async function handleRideRequest(request, env, ctx) {
     customerName: String(customerName || '').trim() || null,
     customerPhone: phoneE164,
     distanceKm,
+    estimatedPriceThb: priceThb,
   };
 
   const token = env.TELEGRAM_BOT_TOKEN;
@@ -403,7 +408,8 @@ async function handleRideRequest(request, env, ctx) {
           const line5 = `👤 Name: ${ride.customerName || '—'}`;
           const line6 = `📱 Customer: ${parsed.format('INTERNATIONAL')}`;
           const line7 = `⏰ Distance: ${distanceKm} km`;
-          const text = [line1, line2, line3Prefix + pickupAddress, line4Prefix + destAddress, line5, line6, line7].join('\n');
+          const line8 = `💰 Price: ${priceThb != null ? priceThb + ' THB' : '—'}`;
+          const text = [line1, line2, line3Prefix + pickupAddress, line4Prefix + destAddress, line5, line6, line7, line8].join('\n');
           const pickupStart = (line1 + '\n' + line2 + '\n' + line3Prefix).length;
           const destStart = (line1 + '\n' + line2 + '\n' + line3Prefix + pickupAddress + '\n' + line4Prefix).length;
           const entities = [

@@ -935,6 +935,7 @@
 
             var pickupData = null;
             var destinationData = null;
+            var bookingSubmitPriceValue = null; // numeric rate shown in booking-submit-price, used for ride-request
             var googleMap = null;
             var pickupMarker = null;
             var destMarker = null;
@@ -1003,11 +1004,13 @@
             function updateBookingSubmitButton() {
                 if (!bookingSubmitText || !bookingSubmitPrice) return;
                 var priceText = '';
+                bookingSubmitPriceValue = null;
                 if (pickupData && destinationData && typeof getZoneIdFromLatLng === 'function' && typeof getRate === 'function' && typeof formatPrice === 'function') {
                     var fromId = getZoneIdFromLatLng(pickupData.lat, pickupData.lng);
                     var toId = getZoneIdFromLatLng(destinationData.lat, destinationData.lng);
                     var rate = fromId && toId ? getRate(fromId, toId) : null;
                     if (rate !== null && rate !== undefined) {
+                        bookingSubmitPriceValue = rate;
                         var formatted = formatPrice(rate);
                         if (formatted !== '—') priceText = ' · ' + formatted;
                     }
@@ -1452,6 +1455,8 @@
                     showResult(success, message);
                 }
 
+                // Use the same value shown in booking-submit-price so Telegram shows that exact price
+                var estimatedPrice = bookingSubmitPriceValue != null ? bookingSubmitPriceValue : null;
                 fetch(API_BASE + '/api/ride-request', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1459,7 +1464,8 @@
                         pickup: { lat: pickupData.lat, lng: pickupData.lng, address: pickupData.address },
                         destination: { lat: destinationData.lat, lng: destinationData.lng, address: destinationData.address },
                         customerName: nameInput.value.trim(),
-                        customerPhone: phoneInput.value.trim()
+                        customerPhone: phoneInput.value.trim(),
+                        estimatedPrice: estimatedPrice
                     })
                 })
                 .then(function(r) { return r.json().then(function(j) { return { ok: r.ok, status: r.status, json: j }; }); })
