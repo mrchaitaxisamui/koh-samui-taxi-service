@@ -1357,6 +1357,11 @@
 
             function closeBookingModal() {
                 if (!bookingModal) return;
+                var active = document.activeElement;
+                if (active && bookingModal.contains(active)) {
+                    if (openBookingModalBtn) openBookingModalBtn.focus();
+                    else active.blur();
+                }
                 bookingModal.classList.remove('active');
                 bookingModal.setAttribute('aria-hidden', 'true');
                 document.body.style.overflow = '';
