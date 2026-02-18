@@ -203,11 +203,14 @@ async function handleRideRequest(request, env) {
   const telegramPromise =
     token && chatId
       ? (async () => {
+          const pickupMapsUrl = `https://www.google.com/maps?q=${encodeURIComponent(pickupLat)},${encodeURIComponent(pickupLng)}`;
+          const destMapsUrl = `https://www.google.com/maps?q=${encodeURIComponent(destLat)},${encodeURIComponent(destLng)}`;
+          const escapeHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
           const text = [
             '🚕 NEW RIDE REQUEST',
             `🆔 Booking ID: ${rideId}`,
-            `📍 Pickup: ${pickupAddress}`,
-            `🏁 Destination: ${destAddress}`,
+            `📍 Pickup: <a href="${pickupMapsUrl}">${escapeHtml(pickupAddress)}</a>`,
+            `🏁 Destination: <a href="${destMapsUrl}">${escapeHtml(destAddress)}</a>`,
             `👤 Name: ${ride.customerName || '—'}`,
             `📱 Customer: ${parsed.format('INTERNATIONAL')}`,
             `⏰ Distance: ${distanceKm} km`,
@@ -232,6 +235,7 @@ async function handleRideRequest(request, env) {
               body: JSON.stringify({
                 chat_id: chatId,
                 text,
+                parse_mode: 'HTML',
                 reply_markup: keyboard,
               }),
             });
