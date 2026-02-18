@@ -950,6 +950,7 @@ h1, h2, h3, h4, h5, h6,
     font-size: 32px;
     font-weight: 700;
     margin-bottom: 48px;
+    text-align: center;
 }
 
 .services-grid {
@@ -1040,6 +1041,7 @@ h1, h2, h3, h4, h5, h6,
     font-weight: 700;
     margin-bottom: 20px;
     line-height: 1.2;
+    text-align: center;
 }
 
 .feature-desc-large {
@@ -1200,10 +1202,6 @@ h1, h2, h3, h4, h5, h6,
 .rates-section {
     padding: 96px 0;
     background: var(--color-white);
-}
-
-.rates-section .section-title {
-    text-align: center;
 }
 
 .section-subtitle {
@@ -1382,10 +1380,6 @@ h1, h2, h3, h4, h5, h6,
     background: var(--color-gray-100);
 }
 
-.unlimited-section .section-title {
-    text-align: center;
-}
-
 .unlimited-lottie-wrap {
     display: flex;
     justify-content: center;
@@ -1460,6 +1454,7 @@ h1, h2, h3, h4, h5, h6,
     margin-left: auto;
     margin-right: auto;
     margin-bottom: 48px;
+    text-align: center;
 }
 
 .packages-scroll-wrap {
@@ -1951,6 +1946,7 @@ h1, h2, h3, h4, h5, h6,
     font-size: 1.8rem;
     margin-bottom: 15px;
     color: var(--color-black);
+    text-align: center;
 }
 
 .content-block-p {
@@ -1971,6 +1967,7 @@ h1, h2, h3, h4, h5, h6,
 .faq-container .faq-heading {
     font-size: 2rem;
     margin-bottom: 24px;
+    text-align: center;
 }
 
 .faq-accordion {
@@ -2080,6 +2077,25 @@ h1, h2, h3, h4, h5, h6,
     display: inline-flex;
     align-items: center;
     gap: 10px;
+}
+
+/* Desktop only: left-align selected section copy; hero tagline stays centered */
+@media (min-width: 769px) {
+    .hero-content > p.hero-subtitle {
+        text-align: center;
+    }
+    .services .section-title,
+    .services .section-subtitle {
+        text-align: left;
+    }
+    .feature-title-large,
+    .feature-desc-large {
+        text-align: left;
+    }
+    .content-block-title,
+    .seo-content-text.content-block p {
+        text-align: left;
+    }
 }
 
 /* Primary WhatsApp (when it’s the main CTA, e.g. alternate hero) */
@@ -2484,9 +2500,10 @@ h1, h2, h3, h4, h5, h6,
     align-items: center;
     gap: 16px;
     padding: 16px;
-    background: var(--color-gray-100);
+    background: none;
     border-radius: var(--radius);
     margin-bottom: 24px;
+    border: 1px solid var(--color-gray-200);
 }
 
 .confirmation-driver-avatar {
@@ -2503,11 +2520,13 @@ h1, h2, h3, h4, h5, h6,
     height: 100%;
     border-radius: 50%;
     object-fit: cover;
+    z-index: 1;
 }
 
 .confirmation-driver-avatar-placeholder {
     position: absolute;
     inset: 0;
+    z-index: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2541,30 +2560,30 @@ h1, h2, h3, h4, h5, h6,
     color: var(--color-black);
 }
 
-.confirmation-driver-call {
+.confirmation-driver-whatsapp {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: var(--color-green);
-    color: var(--color-white);
+    background: none;
+    color: var(--color-black);
     flex-shrink: 0;
     transition: var(--transition);
 }
 
-.confirmation-driver-call:hover {
+.confirmation-driver-whatsapp:hover {
     opacity: 0.9;
     transform: scale(1.05);
 }
 
-.confirmation-driver-call:focus {
+.confirmation-driver-whatsapp:focus {
     outline: 2px solid var(--color-black);
     outline-offset: 2px;
 }
 
-.confirmation-driver-call-icon {
+.confirmation-driver-whatsapp-icon {
     display: block;
 }
 
