@@ -215,9 +215,14 @@ async function handleRideRequest(request, env) {
           const keyboard = {
             inline_keyboard: [
               [
-                { text: '✅ Accept', callback_data: `accept:${rideId}` },
-                { text: '❌ Decline', callback_data: `decline:${rideId}` },
+                { text: '✅ 15 min', callback_data: `accept:${rideId}:15` },
+                { text: '✅ 30 min', callback_data: `accept:${rideId}:30` },
               ],
+              [
+                { text: '✅ 45 min', callback_data: `accept:${rideId}:45` },
+                { text: '✅ 60 min', callback_data: `accept:${rideId}:60` },
+              ],
+              [{ text: '❌ Decline', callback_data: `decline:${rideId}` }],
             ],
           };
           try {
@@ -262,6 +267,7 @@ async function handleRideStatus(rideId, env) {
     destination: ride.destination,
     timestamp: ride.timestamp,
     distanceKm: ride.distanceKm,
+    etaMinutes: ride.etaMinutes ?? null,
   });
 }
 
@@ -274,9 +280,17 @@ async function handleTelegramWebhook(request, env) {
   }
   const cb = update?.callback_query;
   if (!cb?.data) return new Response('OK', { status: 200 });
-  const [action, rideId] = cb.data.split(':');
+  const parts = cb.data.split(':');
+  const action = parts[0];
+  const rideId = parts[1];
+  const etaMinutes = parts[2] ? parseInt(parts[2], 10) : null;
+  const validEta = [15, 30, 45, 60].includes(etaMinutes);
   if (!rideId || (action !== 'accept' && action !== 'decline')) {
     await answerCallback(env.TELEGRAM_BOT_TOKEN, cb.id, 'Unknown action');
+    return new Response('OK', { status: 200 });
+  }
+  if (action === 'accept' && parts.length === 3 && !validEta) {
+    await answerCallback(env.TELEGRAM_BOT_TOKEN, cb.id, 'Unknown ETA');
     return new Response('OK', { status: 200 });
   }
   const raw = await env.RIDES.get(rideId);
@@ -290,8 +304,9 @@ async function handleTelegramWebhook(request, env) {
     return new Response('OK', { status: 200 });
   }
   ride.status = action === 'accept' ? 'accepted' : 'declined';
+  if (action === 'accept' && validEta) ride.etaMinutes = etaMinutes;
   const token = env.TELEGRAM_BOT_TOKEN;
-  const answerText = action === 'accept' ? 'Accepted!' : 'Declined';
+  const answerText = action === 'accept' ? `Accepted! ETA ${ride.etaMinutes || 15} min` : 'Declined';
   // Update KV and give driver immediate feedback in parallel
   await Promise.all([
     env.RIDES.put(rideId, JSON.stringify(ride), { expirationTtl: 60 * 60 * 24 }),
@@ -300,7 +315,8 @@ async function handleTelegramWebhook(request, env) {
   // Edit the message to remove buttons and show result so driver sees clear feedback
   const chatId = cb.message?.chat?.id;
   const messageId = cb.message?.message_id;
-  const suffix = action === 'accept' ? '\n\n— ✅ Accepted' : '\n\n— ❌ Declined';
+  const etaLabel = ride.etaMinutes ? ` • ETA ${ride.etaMinutes} min` : '';
+  const suffix = action === 'accept' ? `\n\n— ✅ Accepted${etaLabel}` : '\n\n— ❌ Declined';
   const newText = (cb.message?.text || '') + suffix;
   if (token && chatId != null && messageId != null) {
     try {

@@ -164,8 +164,14 @@
                     document.getElementById('route-pickup').textContent = pickupAddr;
                     document.getElementById('route-destination').textContent = destAddr;
 
-                    var eta = estimateEtaMinutes(ride.distanceKm);
-                    document.getElementById('eta-value').textContent = eta.min + '–' + eta.max + ' minutes';
+                    var etaText;
+                    if (ride.etaMinutes != null && ride.etaMinutes > 0) {
+                        etaText = 'About ' + ride.etaMinutes + ' minutes';
+                    } else {
+                        var eta = estimateEtaMinutes(ride.distanceKm);
+                        etaText = eta.min + '–' + eta.max + ' minutes';
+                    }
+                    document.getElementById('eta-value').textContent = etaText;
 
                     showCard();
                 })
