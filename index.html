@@ -1037,9 +1037,13 @@
                                     showError('pickup', 'Could not get address. Please enter manually.');
                                 });
                         },
-                        function err() {
+                        function err(e) {
                             resetUi();
-                            showError('pickup', 'Location access denied. Please enter manually.');
+                            var msg = 'Location access denied. Please enter manually.';
+                            if (e && e.code === 1) msg = 'Location denied. Allow location for this site in your browser, or enter manually.';
+                            else if (e && e.code === 2) msg = 'Location unavailable. Please enter manually.';
+                            else if (e && e.code === 3) msg = 'Location timed out. Try again or enter manually.';
+                            showError('pickup', msg);
                         },
                         { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
                     );
