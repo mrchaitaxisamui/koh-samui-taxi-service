@@ -183,8 +183,8 @@ koh-samui-taxi-service/
 - [x] Mobile optimization and accessibility
 
 ### Week 4: Deployment & Polish
-- [ ] Deploy Cloudflare Worker *(run `npx wrangler deploy` — see [DEPLOY.md](DEPLOY.md))*
-- [ ] Configure Telegram bot *(bot token, chat ID, webhook — see [DEPLOY.md](DEPLOY.md))*
+- [x] Deploy Cloudflare Worker *(run `npx wrangler deploy` — see [DEPLOY.md](DEPLOY.md))*
+- [x] Configure Telegram bot *(bot token, chat ID, webhook — see [DEPLOY.md](DEPLOY.md))*
 - [x] Performance optimization *(health check endpoint `GET /api/health` for monitoring)*
 - [x] Final testing and documentation *( [DEPLOY.md](DEPLOY.md) + [README.md](README.md) )*
 
