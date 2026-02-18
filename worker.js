@@ -340,21 +340,21 @@ async function handleRideRequest(request, env) {
       ? (async () => {
           const pickupMapsUrl = `https://www.google.com/maps?q=${encodeURIComponent(pickupLat)},${encodeURIComponent(pickupLng)}`;
           const destMapsUrl = `https://www.google.com/maps?q=${encodeURIComponent(destLat)},${encodeURIComponent(destLng)}`;
-          // Escape for Telegram HTML so link text is safe (links open in Google Maps)
-          const escapeHtml = (s) =>
-            String(s)
-              .replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;');
-          const text = [
-            '🚕 NEW RIDE REQUEST',
-            `🆔 Booking ID: ${escapeHtml(rideId)}`,
-            `📍 Pickup: <a href="${pickupMapsUrl}">${escapeHtml(pickupAddress)}</a>`,
-            `🏁 Destination: <a href="${destMapsUrl}">${escapeHtml(destAddress)}</a>`,
-            `👤 Name: ${escapeHtml(ride.customerName || '—')}`,
-            `📱 Customer: ${escapeHtml(parsed.format('INTERNATIONAL'))}`,
-            `⏰ Distance: ${distanceKm} km`,
-          ].join('\n');
+          // Plain text + entities so links are reliably clickable (no parse_mode)
+          const line1 = '🚕 NEW RIDE REQUEST';
+          const line2 = `🆔 Booking ID: ${rideId}`;
+          const line3Prefix = '📍 Pickup: ';
+          const line4Prefix = '🏁 Destination: ';
+          const line5 = `👤 Name: ${ride.customerName || '—'}`;
+          const line6 = `📱 Customer: ${parsed.format('INTERNATIONAL')}`;
+          const line7 = `⏰ Distance: ${distanceKm} km`;
+          const text = [line1, line2, line3Prefix + pickupAddress, line4Prefix + destAddress, line5, line6, line7].join('\n');
+          const pickupStart = (line1 + '\n' + line2 + '\n' + line3Prefix).length;
+          const destStart = (line1 + '\n' + line2 + '\n' + line3Prefix + pickupAddress + '\n' + line4Prefix).length;
+          const entities = [
+            { type: 'text_link', offset: pickupStart, length: pickupAddress.length, url: pickupMapsUrl },
+            { type: 'text_link', offset: destStart, length: destAddress.length, url: destMapsUrl },
+          ];
           const keyboard = {
             inline_keyboard: [
               [
@@ -375,7 +375,7 @@ async function handleRideRequest(request, env) {
               body: JSON.stringify({
                 chat_id: chatId,
                 text,
-                parse_mode: 'HTML',
+                entities,
                 reply_markup: keyboard,
               }),
             });
@@ -461,19 +461,25 @@ async function handleTelegramWebhook(request, env) {
   const messageId = cb.message?.message_id;
   const etaLabel = ride.etaMinutes ? ` • ETA ${ride.etaMinutes} min` : '';
   const suffix = action === 'accept' ? `\n\n— ✅ Accepted${etaLabel}` : '\n\n— ❌ Declined';
-  const newText = (cb.message?.text || '') + suffix;
+  const origText = cb.message?.text || '';
+  const newText = origText + suffix;
   if (token && chatId != null && messageId != null) {
     try {
+      const editPayload = {
+        chat_id: chatId,
+        message_id: messageId,
+        text: newText,
+        reply_markup: { inline_keyboard: [] },
+      };
+      // Preserve link entities from original message so addresses stay clickable
+      const entities = cb.message?.entities;
+      if (entities && Array.isArray(entities) && entities.length > 0) {
+        editPayload.entities = entities;
+      }
       await fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: chatId,
-          message_id: messageId,
-          text: newText,
-          parse_mode: 'HTML',
-          reply_markup: { inline_keyboard: [] },
-        }),
+        body: JSON.stringify(editPayload),
       });
     } catch (e) {
       console.error('editMessageText failed', e);
