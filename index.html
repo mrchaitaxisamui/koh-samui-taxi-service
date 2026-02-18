@@ -891,7 +891,7 @@
         // ========== Booking Form: Google Maps API (map + Places Autocomplete), Validation, Submit ==========
         (function initBookingForm() {
             var TIMEOUT_MS = 120000; // 2 min polling window (Phase 3)
-            var POLL_INTERVAL_MS = 2000;  // 2s so user sees accept/decline within ~2s
+            var POLL_INTERVAL_MS = 1000;  // 1s for snappier accept/decline feedback
             var API_BASE = 'https://mrchai-dispatch.kohsamui-taxi.workers.dev';
             var GOOGLE_MAPS_API_KEY = window.__GOOGLE_MAPS_API_KEY || '';
 

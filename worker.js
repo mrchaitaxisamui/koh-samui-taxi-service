@@ -66,7 +66,7 @@ export default {
 
     // POST /api/ride-request
     if (request.method === 'POST' && url.pathname === '/api/ride-request') {
-      return handleRideRequest(request, env);
+      return handleRideRequest(request, env, ctx);
     }
     // GET /api/ride-status/:rideId
     if (request.method === 'GET' && url.pathname.startsWith('/api/ride-status/')) {
@@ -76,7 +76,7 @@ export default {
     }
     // POST /api/telegram-webhook (Telegram sends updates here)
     if (request.method === 'POST' && url.pathname === '/api/telegram-webhook') {
-      return handleTelegramWebhook(request, env);
+      return handleTelegramWebhook(request, env, ctx);
     }
     // GET /api/geocode?lat=...&lng=... — reverse geocode via Google (key server-side)
     if (request.method === 'GET' && url.pathname === '/api/geocode') {
@@ -273,7 +273,7 @@ async function handleStaticMap(url, env) {
   }
 }
 
-async function handleRideRequest(request, env) {
+async function handleRideRequest(request, env, ctx) {
   let body;
   try {
     body = await request.json();
@@ -391,12 +391,14 @@ async function handleRideRequest(request, env) {
   if (!token) console.error('TELEGRAM_BOT_TOKEN not set. Run: npx wrangler secret put TELEGRAM_BOT_TOKEN');
   if (!chatId) console.error('TELEGRAM_DRIVER_CHAT_ID not set in wrangler.toml [vars]');
 
-  // Run KV put and Telegram send in parallel so drivers get the message as fast as possible
-  await Promise.all([
-    env.RIDES.put(rideId, JSON.stringify(ride), { expirationTtl: 60 * 60 * 24 }), // 24h TTL
-    telegramPromise,
-  ]);
-
+  // Store ride in KV first so user can start polling immediately
+  await env.RIDES.put(rideId, JSON.stringify(ride), { expirationTtl: 60 * 60 * 24 }); // 24h TTL
+  // Fire Telegram send in background - user gets response without waiting for Telegram API
+  if (ctx && typeof ctx.waitUntil === 'function') {
+    ctx.waitUntil(telegramPromise);
+  } else {
+    await telegramPromise;
+  }
   return jsonResponse({ rideId, status: 'pending' });
 }
 
@@ -415,7 +417,7 @@ async function handleRideStatus(rideId, env) {
   });
 }
 
-async function handleTelegramWebhook(request, env) {
+async function handleTelegramWebhook(request, env, ctx) {
   let update;
   try {
     update = await request.json();
@@ -451,39 +453,46 @@ async function handleTelegramWebhook(request, env) {
   if (action === 'accept' && validEta) ride.etaMinutes = etaMinutes;
   const token = env.TELEGRAM_BOT_TOKEN;
   const answerText = action === 'accept' ? `Accepted! ETA ${ride.etaMinutes || 15} min` : 'Declined';
-  // Update KV and give driver immediate feedback in parallel
+  // Update KV and give driver immediate feedback in parallel - must complete before returning
   await Promise.all([
     env.RIDES.put(rideId, JSON.stringify(ride), { expirationTtl: 60 * 60 * 24 }),
     answerCallback(token, cb.id, answerText),
   ]);
-  // Edit the message to remove buttons and show result so driver sees clear feedback
+  // Edit message in background - return 200 to Telegram fast so we don't hold the webhook
   const chatId = cb.message?.chat?.id;
   const messageId = cb.message?.message_id;
   const etaLabel = ride.etaMinutes ? ` • ETA ${ride.etaMinutes} min` : '';
   const suffix = action === 'accept' ? `\n\n— ✅ Accepted${etaLabel}` : '\n\n— ❌ Declined';
   const origText = cb.message?.text || '';
   const newText = origText + suffix;
-  if (token && chatId != null && messageId != null) {
-    try {
-      const editPayload = {
-        chat_id: chatId,
-        message_id: messageId,
-        text: newText,
-        reply_markup: { inline_keyboard: [] },
-      };
-      // Preserve link entities from original message so addresses stay clickable
-      const entities = cb.message?.entities;
-      if (entities && Array.isArray(entities) && entities.length > 0) {
-        editPayload.entities = entities;
-      }
-      await fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editPayload),
-      });
-    } catch (e) {
-      console.error('editMessageText failed', e);
-    }
+  const editPromise =
+    token && chatId != null && messageId != null
+      ? (async () => {
+          try {
+            const editPayload = {
+              chat_id: chatId,
+              message_id: messageId,
+              text: newText,
+              reply_markup: { inline_keyboard: [] },
+            };
+            const entities = cb.message?.entities;
+            if (entities && Array.isArray(entities) && entities.length > 0) {
+              editPayload.entities = entities;
+            }
+            await fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(editPayload),
+            });
+          } catch (e) {
+            console.error('editMessageText failed', e);
+          }
+        })()
+      : Promise.resolve();
+  if (ctx && typeof ctx.waitUntil === 'function') {
+    ctx.waitUntil(editPromise);
+  } else {
+    await editPromise;
   }
   return new Response('OK', { status: 200 });
 }
