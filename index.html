@@ -9,7 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Uber+Move:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Google Maps API: Enable Maps JavaScript API + Places API in Google Cloud Console -->
+    <!-- Leaflet for booking modal map (no API key). Address autocomplete via worker (key server-side only). -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
     <!-- Navigation -->
@@ -612,11 +613,13 @@
                             </button>
                         </div>
                         <span class="booking-error" id="pickup-error" role="alert"></span>
+                        <div class="autocomplete-dropdown" id="pickup-dropdown" aria-live="polite" role="listbox" aria-hidden="true"></div>
                     </label>
                     <label class="booking-field">
                         <span class="booking-label">Destination</span>
                         <input type="text" id="destination-input" class="booking-input" placeholder="Where to?" autocomplete="off" required aria-required="true" aria-describedby="destination-error">
                         <span class="booking-error" id="destination-error" role="alert"></span>
+                        <div class="autocomplete-dropdown" id="destination-dropdown" aria-live="polite" role="listbox" aria-hidden="true"></div>
                     </label>
                     <div class="booking-map-wrap" id="booking-map-wrap" aria-hidden="true" hidden>
                         <div id="booking-map" class="booking-map" role="img" aria-label="Map showing pickup and destination"></div>
@@ -675,22 +678,7 @@
 
     <script id="lottie-script" src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" integrity="sha512-jEnuDt6jfecCjthQAJ+ed0MTVA++5ZKmlUcmDGBv2vUI/REn6FuIdixLNnQT+vKusE2hhTk2is3cFvv5wA+Sgg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://unpkg.com/libphonenumber-js@1/bundle/libphonenumber-min.js"></script>
-    <!-- Google Maps API: set GOOGLE_MAPS_API_KEY below. Enable Maps JavaScript API + Places API in Google Cloud Console. -->
-    <script>
-        window.GOOGLE_MAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY';
-        (function loadGoogleMaps() {
-            var key = (typeof window.GOOGLE_MAPS_API_KEY === 'string' && window.GOOGLE_MAPS_API_KEY) ? window.GOOGLE_MAPS_API_KEY : '';
-            if (!key || key === 'YOUR_GOOGLE_MAPS_API_KEY') {
-                console.warn('Google Maps API key not set. Set GOOGLE_MAPS_API_KEY in index.html for address autocomplete and map.');
-                return;
-            }
-            var s = document.createElement('script');
-            s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(key) + '&libraries=places&callback=initGoogleMapsBooking';
-            s.async = true;
-            s.defer = true;
-            document.head.appendChild(s);
-        })();
-    </script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // Hero + Unlimited Lottie animations (lottie-web, JSON) - runs after lottie script loads
         (function initLottieAnimations() {
@@ -900,7 +888,7 @@
             updateRatesUI();
         })();
 
-        // ========== Booking Form: Google Places Autocomplete, Validation, Submit ==========
+        // ========== Booking Form: Worker-proxied Places autocomplete (key server-side only), Validation, Submit ==========
         (function initBookingForm() {
             var TIMEOUT_MS = 120000; // 2 min polling window (Phase 3)
             var POLL_INTERVAL_MS = 2000;  // 2s so user sees accept/decline within ~2s
@@ -916,6 +904,8 @@
             var destinationInput = document.getElementById('destination-input');
             var nameInput = document.getElementById('name-input');
             var phoneInput = document.getElementById('phone-input');
+            var pickupDropdown = document.getElementById('pickup-dropdown');
+            var destinationDropdown = document.getElementById('destination-dropdown');
             var bookingMapWrap = document.getElementById('booking-map-wrap');
             var bookingMapEl = document.getElementById('booking-map');
             var loadingOverlay = document.getElementById('loading-overlay');
@@ -932,29 +922,24 @@
             var bookingMap = null;
             var pickupMarker = null;
             var destMarker = null;
-
-            // Koh Samui bounds for Places bias
-            var KOH_SAMUI_BOUNDS = { south: 9.38, west: 99.85, north: 9.62, east: 100.12 };
+            var debounceTimer = null;
+            var DEBOUNCE_MS = 280;
 
             function updateBookingMap() {
-                if (!bookingMap || !bookingMapEl || !bookingMapWrap) return;
-                if (pickupData && destinationData) {
-                    var bounds = new google.maps.LatLngBounds();
-                    bounds.extend(new google.maps.LatLng(pickupData.lat, pickupData.lng));
-                    bounds.extend(new google.maps.LatLng(destinationData.lat, destinationData.lng));
-                    bookingMap.fitBounds(bounds, 48);
-                    if (pickupMarker) pickupMarker.setMap(null);
-                    if (destMarker) destMarker.setMap(null);
-                    pickupMarker = new google.maps.Marker({
-                        position: { lat: pickupData.lat, lng: pickupData.lng },
-                        map: bookingMap,
-                        title: 'Pickup'
-                    });
-                    destMarker = new google.maps.Marker({
-                        position: { lat: destinationData.lat, lng: destinationData.lng },
-                        map: bookingMap,
-                        title: 'Destination'
-                    });
+                if (!bookingMapEl || !bookingMapWrap) return;
+                if (pickupData && destinationData && typeof L !== 'undefined') {
+                    if (!bookingMap) {
+                        bookingMap = L.map(bookingMapEl).setView([9.5, 100.0], 10);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                        }).addTo(bookingMap);
+                    }
+                    if (pickupMarker) bookingMap.removeLayer(pickupMarker);
+                    if (destMarker) bookingMap.removeLayer(destMarker);
+                    pickupMarker = L.marker([pickupData.lat, pickupData.lng]).addTo(bookingMap).bindTooltip('Pickup');
+                    destMarker = L.marker([destinationData.lat, destinationData.lng]).addTo(bookingMap).bindTooltip('Destination');
+                    var bounds = L.latLngBounds([pickupData.lat, pickupData.lng], [destinationData.lat, destinationData.lng]);
+                    bookingMap.fitBounds(bounds, { padding: [24, 24] });
                     bookingMapWrap.hidden = false;
                     bookingMapWrap.setAttribute('aria-hidden', 'false');
                 } else {
@@ -963,64 +948,88 @@
                 }
             }
 
-            function setupGooglePlacesAutocomplete() {
-                if (typeof google === 'undefined' || !google.maps || !google.maps.places) return;
-                var kohSamuiBounds = new google.maps.LatLngBounds(
-                    new google.maps.LatLng(KOH_SAMUI_BOUNDS.south, KOH_SAMUI_BOUNDS.west),
-                    new google.maps.LatLng(KOH_SAMUI_BOUNDS.north, KOH_SAMUI_BOUNDS.east)
-                );
-                var acOpts = {
-                    bounds: kohSamuiBounds,
-                    componentRestrictions: { country: 'th' },
-                    fields: ['formatted_address', 'geometry', 'name']
-                };
-                var pickupAc = new google.maps.places.Autocomplete(pickupInput, acOpts);
-                pickupAc.addListener('place_changed', function() {
-                    var place = pickupAc.getPlace();
-                    if (place.geometry && place.geometry.location) {
-                        pickupData = {
-                            lat: place.geometry.location.lat(),
-                            lng: place.geometry.location.lng(),
-                            address: place.formatted_address || place.name || ''
-                        };
-                        pickupInput.value = pickupData.address;
-                        updateBookingMap();
-                    } else {
-                        pickupData = null;
-                    }
-                });
-                var destAc = new google.maps.places.Autocomplete(destinationInput, acOpts);
-                destAc.addListener('place_changed', function() {
-                    var place = destAc.getPlace();
-                    if (place.geometry && place.geometry.location) {
-                        destinationData = {
-                            lat: place.geometry.location.lat(),
-                            lng: place.geometry.location.lng(),
-                            address: place.formatted_address || place.name || ''
-                        };
-                        destinationInput.value = destinationData.address;
-                        updateBookingMap();
-                    } else {
-                        destinationData = null;
-                    }
-                });
-                // Init map (hidden until both places selected)
-                if (bookingMapEl) {
-                    bookingMap = new google.maps.Map(bookingMapEl, {
-                        center: { lat: 9.5, lng: 100.0 },
-                        zoom: 11,
-                        disableDefaultUI: true,
-                        zoomControl: true
-                    });
-                }
+            function searchPlaces(query, callback) {
+                if (!query || query.trim().length < 2) { callback([]); return; }
+                fetch(API_BASE + '/api/places-autocomplete?input=' + encodeURIComponent(query.trim()))
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        callback(Array.isArray(data.predictions) ? data.predictions : []);
+                    })
+                    .catch(function() { callback([]); });
             }
 
-            window.initGoogleMapsBooking = function() {
-                setupGooglePlacesAutocomplete();
-            };
-            if (typeof google !== 'undefined' && google.maps && google.maps.places) {
-                setupGooglePlacesAutocomplete();
+            function fetchPlaceDetails(placeId, callback) {
+                if (!placeId) { callback(null); return; }
+                fetch(API_BASE + '/api/place-details?place_id=' + encodeURIComponent(placeId))
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.lat != null && data.lng != null && data.address) {
+                            callback({ lat: data.lat, lng: data.lng, address: data.address });
+                        } else {
+                            callback(null);
+                        }
+                    })
+                    .catch(function() { callback(null); });
             }
+
+            function setupAutocomplete(inputEl, dropdownEl, setData) {
+                inputEl.addEventListener('input', function() {
+                    setData(null);
+                    clearTimeout(debounceTimer);
+                    var q = this.value.trim();
+                    dropdownEl.innerHTML = '';
+                    dropdownEl.setAttribute('aria-hidden', 'true');
+                    if (q.length < 2) return;
+                    debounceTimer = setTimeout(function() {
+                        searchPlaces(q, function(predictions) {
+                            dropdownEl.innerHTML = '';
+                            if (!predictions.length) {
+                                dropdownEl.setAttribute('aria-hidden', 'true');
+                                return;
+                            }
+                            predictions.forEach(function(p, i) {
+                                var desc = p.description || '';
+                                var placeId = p.place_id || '';
+                                var item = document.createElement('div');
+                                item.className = 'autocomplete-item';
+                                item.role = 'option';
+                                item.id = dropdownEl.id + '-opt-' + i;
+                                item.textContent = desc;
+                                item.tabIndex = 0;
+                                item.dataset.placeId = placeId;
+                                item.dataset.description = desc;
+                                item.addEventListener('click', function() {
+                                    var pid = this.dataset.placeId;
+                                    var descText = this.dataset.description;
+                                    inputEl.value = descText;
+                                    setData(null);
+                                    dropdownEl.innerHTML = '';
+                                    dropdownEl.setAttribute('aria-hidden', 'true');
+                                    fetchPlaceDetails(pid, function(d) {
+                                        if (d) {
+                                            setData(d);
+                                            updateBookingMap();
+                                        }
+                                    });
+                                });
+                                item.addEventListener('keydown', function(e) {
+                                    if (e.key === 'Enter') { e.preventDefault(); this.click(); }
+                                });
+                                dropdownEl.appendChild(item);
+                            });
+                            dropdownEl.setAttribute('aria-hidden', 'false');
+                        });
+                    }, DEBOUNCE_MS);
+                });
+                inputEl.addEventListener('blur', function() {
+                    setTimeout(function() {
+                        dropdownEl.innerHTML = '';
+                        dropdownEl.setAttribute('aria-hidden', 'true');
+                    }, 180);
+                });
+            }
+            setupAutocomplete(pickupInput, pickupDropdown, function(d) { pickupData = d; });
+            setupAutocomplete(destinationInput, destinationDropdown, function(d) { destinationData = d; });
             pickupInput.addEventListener('input', function() {
                 if (!this.value.trim()) { pickupData = null; updateBookingMap(); }
             });

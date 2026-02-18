@@ -60,7 +60,7 @@ export default {
       return jsonResponse({
         ok: true,
         service: 'mrchai-dispatch',
-        endpoints: ['POST /api/ride-request', 'GET /api/ride-status/:rideId', 'POST /api/telegram-webhook'],
+        endpoints: ['POST /api/ride-request', 'GET /api/ride-status/:rideId', 'POST /api/telegram-webhook', 'GET /api/places-autocomplete', 'GET /api/place-details', 'GET /api/geocode'],
       });
     }
 
@@ -81,6 +81,14 @@ export default {
     // GET /api/geocode?lat=...&lng=... — reverse geocode via Google (key server-side)
     if (request.method === 'GET' && url.pathname === '/api/geocode') {
       return handleGeocode(url, env);
+    }
+    // GET /api/places-autocomplete?input=... — Google Places Autocomplete (key server-side)
+    if (request.method === 'GET' && url.pathname === '/api/places-autocomplete') {
+      return handlePlacesAutocomplete(url, env);
+    }
+    // GET /api/place-details?place_id=... — Google Place Details for lat/lng/address (key server-side)
+    if (request.method === 'GET' && url.pathname === '/api/place-details') {
+      return handlePlaceDetails(url, env);
     }
 
     return jsonResponse({ error: 'Not found' }, 404);
@@ -135,6 +143,91 @@ async function handleGeocode(url, env) {
   } catch (e) {
     console.error('Geocode fetch failed', e);
     return jsonResponse({ error: 'Geocoding service unavailable. Please enter manually.' }, 502);
+  }
+}
+
+/** Koh Samui bounds: south,west|north,east for locationrestriction */
+const KOH_SAMUI_RECT = '9.38,99.85|9.62,100.12';
+
+async function handlePlacesAutocomplete(url, env) {
+  const input = url.searchParams.get('input');
+  const key = env.GOOGLE_MAPS_API_KEY;
+  if (!key) {
+    return jsonResponse({ error: 'Places autocomplete not configured' }, 503);
+  }
+  if (!input || typeof input !== 'string' || input.trim().length < 2) {
+    return jsonResponse({ predictions: [] });
+  }
+  const params = new URLSearchParams({
+    input: input.trim(),
+    key,
+    types: 'geocode',
+    components: 'country:th',
+    locationrestriction: `rectangle:${KOH_SAMUI_RECT}`,
+    language: 'en',
+  });
+  try {
+    const res = await fetch(`https://maps.googleapis.com/maps/api/place/autocomplete/json?${params.toString()}`);
+    const data = await res.json().catch(() => ({}));
+    const status = data.status || 'UNKNOWN';
+    if (status === 'OK') {
+      const predictions = Array.isArray(data.predictions) ? data.predictions : [];
+      return jsonResponse({ predictions });
+    }
+    if (status === 'ZERO_RESULTS') {
+      return jsonResponse({ predictions: [] });
+    }
+    if (status === 'REQUEST_DENIED') {
+      return jsonResponse({ error: 'Places autocomplete denied.', predictions: [] }, 502);
+    }
+    if (status === 'OVER_QUERY_LIMIT') {
+      return jsonResponse({ error: 'Places limit reached. Try again later.', predictions: [] }, 502);
+    }
+    return jsonResponse({ predictions: [] });
+  } catch (e) {
+    console.error('Places autocomplete fetch failed', e);
+    return jsonResponse({ error: 'Places service unavailable.', predictions: [] }, 502);
+  }
+}
+
+async function handlePlaceDetails(url, env) {
+  const placeId = url.searchParams.get('place_id');
+  const key = env.GOOGLE_MAPS_API_KEY;
+  if (!key) {
+    return jsonResponse({ error: 'Place details not configured' }, 503);
+  }
+  if (!placeId || typeof placeId !== 'string' || !placeId.trim()) {
+    return jsonResponse({ error: 'Missing place_id' }, 400);
+  }
+  const params = new URLSearchParams({
+    place_id: placeId.trim(),
+    key,
+    fields: 'formatted_address,geometry,name',
+  });
+  try {
+    const res = await fetch(`https://maps.googleapis.com/maps/api/place/details/json?${params.toString()}`);
+    const data = await res.json().catch(() => ({}));
+    const status = data.status || 'UNKNOWN';
+    if (status === 'OK' && data.result) {
+      const r = data.result;
+      const loc = r.geometry && r.geometry.location;
+      const lat = loc && typeof loc.lat === 'number' ? loc.lat : null;
+      const lng = loc && typeof loc.lng === 'number' ? loc.lng : null;
+      const address = (typeof r.formatted_address === 'string' && r.formatted_address) || r.name || null;
+      if (lat != null && lng != null && address) {
+        return jsonResponse({ lat, lng, address: address.trim() });
+      }
+    }
+    if (status === 'NOT_FOUND' || status === 'ZERO_RESULTS') {
+      return jsonResponse({ error: 'Place not found' }, 404);
+    }
+    if (status === 'REQUEST_DENIED') {
+      return jsonResponse({ error: 'Place details denied.' }, 502);
+    }
+    return jsonResponse({ error: 'Could not get place details.' }, 502);
+  } catch (e) {
+    console.error('Place details fetch failed', e);
+    return jsonResponse({ error: 'Place details unavailable.' }, 502);
   }
 }
 
