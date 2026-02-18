@@ -53,7 +53,8 @@
                     <span class="confirmation-eta-icon" aria-hidden="true">⏱</span>
                     <div>
                         <span class="confirmation-eta-label">Estimated arrival at pickup</span>
-                        <p class="confirmation-eta-value" id="eta-value">5–15 minutes</p>
+                        <p class="confirmation-eta-value" id="eta-value">5min–15min</p>
+                        <p class="confirmation-eta-time" id="eta-time" hidden></p>
                     </div>
                 </div>
 
@@ -125,6 +126,20 @@
                 return { min: min, max: max };
             }
 
+            function formatEtaRange(minMin, maxMin) {
+                return minMin + 'min–' + maxMin + 'min';
+            }
+
+            function formatArrivalTimeWindow(minMin, maxMin) {
+                var now = new Date();
+                var tMin = new Date(now.getTime() + minMin * 60000);
+                var tMax = new Date(now.getTime() + maxMin * 60000);
+                var pad = function(n) { return (n < 10 ? '0' : '') + n; };
+                var timeMin = pad(tMin.getHours()) + ':' + pad(tMin.getMinutes());
+                var timeMax = pad(tMax.getHours()) + ':' + pad(tMax.getMinutes());
+                return 'Arrival by ' + timeMin + '–' + timeMax;
+            }
+
             function showCard() {
                 document.getElementById('confirmation-loading').hidden = true;
                 document.getElementById('confirmation-error').hidden = true;
@@ -164,14 +179,19 @@
                     document.getElementById('route-pickup').textContent = pickupAddr;
                     document.getElementById('route-destination').textContent = destAddr;
 
-                    var etaText;
+                    var etaMin, etaMax;
                     if (ride.etaMinutes != null && ride.etaMinutes > 0) {
-                        etaText = 'About ' + ride.etaMinutes + ' minutes';
+                        etaMin = ride.etaMinutes;
+                        etaMax = Math.min(60, ride.etaMinutes + 10);
                     } else {
                         var eta = estimateEtaMinutes(ride.distanceKm);
-                        etaText = eta.min + '–' + eta.max + ' minutes';
+                        etaMin = eta.min;
+                        etaMax = eta.max;
                     }
-                    document.getElementById('eta-value').textContent = etaText;
+                    document.getElementById('eta-value').textContent = formatEtaRange(etaMin, etaMax);
+                    var etaTimeEl = document.getElementById('eta-time');
+                    etaTimeEl.textContent = formatArrivalTimeWindow(etaMin, etaMax);
+                    etaTimeEl.hidden = false;
 
                     showCard();
                 })
