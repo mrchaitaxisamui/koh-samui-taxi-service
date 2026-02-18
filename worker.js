@@ -205,12 +205,20 @@ async function handleRideRequest(request, env) {
       ? (async () => {
           const pickupMapsUrl = `https://www.google.com/maps?q=${encodeURIComponent(pickupLat)},${encodeURIComponent(pickupLng)}`;
           const destMapsUrl = `https://www.google.com/maps?q=${encodeURIComponent(destLat)},${encodeURIComponent(destLng)}`;
-          const escapeHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          // Escape for Telegram Markdown link text so [text](url) is valid
+          const escapeMd = (s) =>
+            String(s)
+              .replace(/\\/g, '\\\\')
+              .replace(/\]/g, '\\]')
+              .replace(/\)/g, '\\)')
+              .replace(/_/g, '\\_')
+              .replace(/\*/g, '\\*')
+              .replace(/`/g, '\\`');
           const text = [
             '🚕 NEW RIDE REQUEST',
             `🆔 Booking ID: ${rideId}`,
-            `📍 Pickup: <a href="${pickupMapsUrl}">${escapeHtml(pickupAddress)}</a>`,
-            `🏁 Destination: <a href="${destMapsUrl}">${escapeHtml(destAddress)}</a>`,
+            `📍 Pickup: [${escapeMd(pickupAddress)}](${pickupMapsUrl})`,
+            `🏁 Destination: [${escapeMd(destAddress)}](${destMapsUrl})`,
             `👤 Name: ${ride.customerName || '—'}`,
             `📱 Customer: ${parsed.format('INTERNATIONAL')}`,
             `⏰ Distance: ${distanceKm} km`,
@@ -235,7 +243,7 @@ async function handleRideRequest(request, env) {
               body: JSON.stringify({
                 chat_id: chatId,
                 text,
-                parse_mode: 'HTML',
+                parse_mode: 'Markdown',
                 reply_markup: keyboard,
               }),
             });
