@@ -91,13 +91,30 @@ https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getWebhookInfo
 
 ## 4. Connect the frontend
 
-In **index.html**, set `API_BASE` to your worker URL (around line 856):
+### 4.1 API base URL
+
+In **index.html**, set `API_BASE` to your worker URL:
 
 ```javascript
 var API_BASE = 'https://mrchai-dispatch.<your-subdomain>.workers.dev';
 ```
 
 Replace `<your-subdomain>` with your actual Workers subdomain (e.g. `kohsamui-taxi` if your URL is `https://mrchai-dispatch.kohsamui-taxi.workers.dev`).
+
+### 4.2 Google Maps API key (address autocomplete & map)
+
+The booking form uses **Google Maps JavaScript API** and **Places API** for address autocomplete and the route map. Set your API key in **index.html**:
+
+```javascript
+window.GOOGLE_MAPS_API_KEY = 'YOUR_ACTUAL_API_KEY';
+```
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create or select a project
+3. Enable **Maps JavaScript API** and **Places API**
+4. Create an API key under Credentials
+5. Restrict the key to your domain (HTTP referrers) for production
+6. If you use the worker's geocode endpoint for "Use my location", also set `npx wrangler secret put GOOGLE_MAPS_API_KEY` for the worker (server-side geocoding)
 
 ---
 
@@ -130,6 +147,7 @@ The site and the worker can be on different domains; CORS is already allowed by 
 - [ ] `/api/health` returns `ok: true`
 - [ ] Telegram webhook set to `.../api/telegram-webhook`
 - [ ] `API_BASE` in `index.html` set to worker URL
+- [ ] `GOOGLE_MAPS_API_KEY` in index.html set (for address autocomplete & map)
 - [ ] Frontend deployed; end-to-end test (request → Accept/Decline) done
 
 ---
