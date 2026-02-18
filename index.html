@@ -636,6 +636,7 @@
                 </div>
                 <button type="submit" class="btn btn-primary btn-full btn-large btn-submit" id="booking-submit">
                     <span class="btn-submit-text" id="booking-submit-text">Request a Ride</span>
+                    <span class="btn-submit-price" id="booking-submit-price" aria-hidden="true"></span>
                     <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
@@ -794,17 +795,29 @@
         });
 
         // Dynamic rates: price from Lipa Noi (THB) – used to derive all origin/destination pairs
+        // lat/lng: approximate zone centroids on Koh Samui for mapping address → zone → price
         var RATE_ZONES = [
-            { id: 'lipanoi',    name: 'Lipa Noi',           baseFromLipanoi: 0 },
-            { id: 'nathon',     name: 'Nathon',             baseFromLipanoi: 600 },
-            { id: 'lamai',      name: 'Lamai',              baseFromLipanoi: 800 },
-            { id: 'maenam',     name: 'Maenam',             baseFromLipanoi: 1000 },
-            { id: 'bophut-chaweng', name: 'Bophut / Chaweng', baseFromLipanoi: 1100 },
-            { id: 'airport',    name: 'Airport',            baseFromLipanoi: 1300 },
-            { id: 'chong-mon',  name: 'Chong Mon',         baseFromLipanoi: 1500 }
+            { id: 'lipanoi',    name: 'Lipa Noi',           baseFromLipanoi: 0,    lat: 9.48, lng: 99.95 },
+            { id: 'nathon',     name: 'Nathon',             baseFromLipanoi: 600,  lat: 9.52, lng: 100.00 },
+            { id: 'lamai',      name: 'Lamai',              baseFromLipanoi: 800,  lat: 9.47, lng: 100.03 },
+            { id: 'maenam',     name: 'Maenam',             baseFromLipanoi: 1000, lat: 9.57, lng: 100.05 },
+            { id: 'bophut-chaweng', name: 'Bophut / Chaweng', baseFromLipanoi: 1100, lat: 9.53, lng: 100.08 },
+            { id: 'airport',    name: 'Airport',            baseFromLipanoi: 1300, lat: 9.54, lng: 100.06 },
+            { id: 'chong-mon',  name: 'Chong Mon',         baseFromLipanoi: 1500, lat: 9.55, lng: 100.10 }
         ];
         var zoneById = {};
         RATE_ZONES.forEach(function(z) { zoneById[z.id] = z; });
+
+        function getZoneIdFromLatLng(lat, lng) {
+            if (lat == null || lng == null || !RATE_ZONES.length) return null;
+            var best = null, bestD2 = Infinity;
+            for (var i = 0; i < RATE_ZONES.length; i++) {
+                var z = RATE_ZONES[i];
+                var d2 = (z.lat - lat) * (z.lat - lat) + (z.lng - lng) * (z.lng - lng);
+                if (d2 < bestD2) { bestD2 = d2; best = z.id; }
+            }
+            return best;
+        }
 
         function getRate(fromId, toId) {
             var from = zoneById[fromId], to = zoneById[toId];
@@ -918,6 +931,7 @@
             var rideConfirmedCloseBtn = document.getElementById('ride-confirmed-close');
             var bookingSubmitBtn = document.getElementById('booking-submit');
             var bookingSubmitText = document.getElementById('booking-submit-text');
+            var bookingSubmitPrice = document.getElementById('booking-submit-price');
 
             var pickupData = null;
             var destinationData = null;
@@ -983,6 +997,23 @@
                     bookingMapWrap.hidden = false;
                     bookingMapWrap.setAttribute('aria-hidden', 'false');
                 }
+                updateBookingSubmitButton();
+            }
+
+            function updateBookingSubmitButton() {
+                if (!bookingSubmitText || !bookingSubmitPrice) return;
+                var priceText = '';
+                if (pickupData && destinationData && typeof getZoneIdFromLatLng === 'function' && typeof getRate === 'function' && typeof formatPrice === 'function') {
+                    var fromId = getZoneIdFromLatLng(pickupData.lat, pickupData.lng);
+                    var toId = getZoneIdFromLatLng(destinationData.lat, destinationData.lng);
+                    var rate = fromId && toId ? getRate(fromId, toId) : null;
+                    if (rate !== null && rate !== undefined) {
+                        var formatted = formatPrice(rate);
+                        if (formatted !== '—') priceText = ' · ' + formatted;
+                    }
+                }
+                bookingSubmitPrice.textContent = priceText;
+                bookingSubmitPrice.setAttribute('aria-hidden', priceText ? 'false' : 'true');
             }
 
             function initGoogleMapsAndAutocomplete() {
@@ -1354,6 +1385,7 @@
                 bookingModal.classList.add('active');
                 bookingModal.setAttribute('aria-hidden', 'false');
                 document.body.style.overflow = 'hidden';
+                updateBookingSubmitButton();
                 setTimeout(function() { pickupInput.focus(); }, 100);
             }
 
