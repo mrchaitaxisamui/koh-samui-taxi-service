@@ -93,6 +93,7 @@ async function handleRideRequest(request, env) {
   const {
     pickup = {},
     destination = {},
+    customerName,
     customerPhone,
   } = body;
   const pickupLat = Number(pickup.lat);
@@ -137,6 +138,7 @@ async function handleRideRequest(request, env) {
     pickup: { lat: pickupLat, lng: pickupLng, address: pickupAddress },
     destination: { lat: destLat, lng: destLng, address: destAddress },
     timestamp: Date.now(),
+    customerName: String(customerName || '').trim() || null,
     customerPhone: phoneE164,
     distanceKm,
   };
@@ -146,14 +148,16 @@ async function handleRideRequest(request, env) {
   const telegramPromise =
     token && chatId
       ? (async () => {
+          const nameLine = ride.customerName ? `👤 Name: ${ride.customerName}` : '';
           const text = [
             '🚕 NEW RIDE REQUEST',
             `🆔 Booking ID: ${rideId}`,
             `📍 Pickup: ${pickupAddress}`,
             `🏁 Destination: ${destAddress}`,
+            nameLine,
             `📱 Customer: ${parsed.format('INTERNATIONAL')}`,
             `⏰ Distance: ${distanceKm} km`,
-          ].join('\n');
+          ].filter(Boolean).join('\n');
           const keyboard = {
             inline_keyboard: [
               [

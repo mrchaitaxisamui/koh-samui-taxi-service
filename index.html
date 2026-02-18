@@ -615,6 +615,11 @@
                         <div class="autocomplete-dropdown" id="destination-dropdown" aria-live="polite" role="listbox" aria-hidden="true"></div>
                     </label>
                     <label class="booking-field">
+                        <span class="booking-label">What we should call you</span>
+                        <input type="text" id="name-input" class="booking-input" placeholder="Your name" autocomplete="name" required aria-required="true" aria-describedby="name-error">
+                        <span class="booking-error" id="name-error" role="alert"></span>
+                    </label>
+                    <label class="booking-field">
                         <span class="booking-label">Phone</span>
                         <input type="tel" id="phone-input" class="booking-input" placeholder="+66 82 123 4567" required aria-required="true" aria-describedby="phone-error">
                         <span class="booking-error" id="phone-error" role="alert"></span>
@@ -891,6 +896,7 @@
             var bookingModalBackdrop = bookingModal && bookingModal.querySelector('.booking-modal-backdrop');
             var pickupInput = document.getElementById('pickup-input');
             var destinationInput = document.getElementById('destination-input');
+            var nameInput = document.getElementById('name-input');
             var phoneInput = document.getElementById('phone-input');
             var pickupDropdown = document.getElementById('pickup-dropdown');
             var destinationDropdown = document.getElementById('destination-dropdown');
@@ -1083,12 +1089,14 @@
                 e.preventDefault();
                 showError('pickup', '');
                 showError('destination', '');
+                showError('name', '');
                 showError('phone', '');
                 var valid = true;
                 if (!pickupInput.value.trim()) { showError('pickup', 'Please enter a pickup location.'); valid = false; }
                 if (!destinationInput.value.trim()) { showError('destination', 'Please enter a destination.'); valid = false; }
                 if (!pickupData) { showError('pickup', 'Please select a pickup from the suggestions.'); valid = false; }
                 if (!destinationData) { showError('destination', 'Please select a destination from the suggestions.'); valid = false; }
+                if (!nameInput.value.trim()) { showError('name', 'Please tell us what to call you.'); valid = false; }
                 if (!validatePhone(phoneInput.value)) { showError('phone', 'Enter a valid phone number with country code (e.g. +66 82 123 4567, +44 7700 900000).'); valid = false; }
                 if (!valid) return;
 
@@ -1119,6 +1127,7 @@
                     body: JSON.stringify({
                         pickup: { lat: pickupData.lat, lng: pickupData.lng, address: pickupData.address },
                         destination: { lat: destinationData.lat, lng: destinationData.lng, address: destinationData.address },
+                        customerName: nameInput.value.trim(),
                         customerPhone: phoneInput.value.trim()
                     })
                 })
