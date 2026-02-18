@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Uber+Move:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Booking uses Google Maps API only: map + Places Autocomplete. Set window.__GOOGLE_MAPS_API_KEY for map and autocomplete (no Leaflet). -->
+    <!-- Booking: Google Maps API (map + Places Autocomplete). Set window.__GOOGLE_MAPS_API_KEY for map and autocomplete. -->
 </head>
 <body>
     <!-- Navigation -->
@@ -1247,8 +1247,6 @@
                 var valid = true;
                 if (!pickupInput.value.trim()) { showError('pickup', 'Please enter a pickup location.'); valid = false; }
                 if (!destinationInput.value.trim()) { showError('destination', 'Please enter a destination.'); valid = false; }
-                if (!pickupData) { showError('pickup', 'Please select a pickup from the suggestions.'); valid = false; }
-                if (!destinationData) { showError('destination', 'Please select a destination from the suggestions.'); valid = false; }
                 if (!nameInput.value.trim()) { showError('name', 'Please tell us what to call you.'); valid = false; }
                 if (!validatePhone(phoneInput.value)) { showError('phone', 'Enter a valid phone number with country code (e.g. +66 82 123 4567, +44 7700 900000).'); valid = false; }
                 if (!valid) return;
