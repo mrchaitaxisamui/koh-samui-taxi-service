@@ -491,6 +491,55 @@ h1, h2, h3, h4, h5, h6,
     color: var(--color-gray-500);
 }
 
+/* Pickup input wrapper for "Use my location" icon */
+.booking-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.booking-input-wrap .booking-input {
+    padding-right: 44px;
+}
+
+.booking-location-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    border: none;
+    background: none;
+    color: var(--color-gray-600);
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: var(--transition);
+}
+
+.booking-location-btn:hover,
+.booking-location-btn:focus {
+    color: var(--color-gray-800);
+    outline: none;
+}
+
+.booking-location-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.booking-location-btn.loading {
+    pointer-events: none;
+    animation: location-pulse 1s ease-in-out infinite;
+}
+
+@keyframes location-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
 .booking-error {
     font-size: 13px;
     color: #c62828;

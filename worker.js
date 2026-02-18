@@ -78,10 +78,46 @@ export default {
     if (request.method === 'POST' && url.pathname === '/api/telegram-webhook') {
       return handleTelegramWebhook(request, env);
     }
+    // GET /api/geocode?lat=...&lng=... — reverse geocode via Google (key server-side)
+    if (request.method === 'GET' && url.pathname === '/api/geocode') {
+      return handleGeocode(url, env);
+    }
 
     return jsonResponse({ error: 'Not found' }, 404);
   },
 };
+
+async function handleGeocode(url, env) {
+  const lat = url.searchParams.get('lat');
+  const lng = url.searchParams.get('lng');
+  const latNum = lat != null ? Number(lat) : NaN;
+  const lngNum = lng != null ? Number(lng) : NaN;
+  if (!Number.isFinite(latNum) || !Number.isFinite(lngNum) ||
+      latNum < -90 || latNum > 90 || lngNum < -180 || lngNum > 180) {
+    return jsonResponse({ error: 'Invalid or missing lat/lng' }, 400);
+  }
+  const key = env.GOOGLE_MAPS_API_KEY;
+  if (!key) {
+    return jsonResponse({ error: 'Geocoding not configured' }, 503);
+  }
+  try {
+    const res = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${encodeURIComponent(latNum)}%2C${encodeURIComponent(lngNum)}&key=${encodeURIComponent(key)}`
+    );
+    const data = await res.json();
+    if (data.status !== 'OK' || !Array.isArray(data.results) || data.results.length === 0) {
+      return jsonResponse({ error: 'No address found' }, 502);
+    }
+    const formatted = data.results[0].formatted_address;
+    if (!formatted || typeof formatted !== 'string') {
+      return jsonResponse({ error: 'No address found' }, 502);
+    }
+    return jsonResponse({ formatted_address: formatted });
+  } catch (e) {
+    console.error('Geocode fetch failed', e);
+    return jsonResponse({ error: 'Geocoding failed' }, 502);
+  }
+}
 
 async function handleRideRequest(request, env) {
   let body;
@@ -148,16 +184,15 @@ async function handleRideRequest(request, env) {
   const telegramPromise =
     token && chatId
       ? (async () => {
-          const nameLine = ride.customerName ? `👤 Name: ${ride.customerName}` : '';
           const text = [
             '🚕 NEW RIDE REQUEST',
             `🆔 Booking ID: ${rideId}`,
             `📍 Pickup: ${pickupAddress}`,
             `🏁 Destination: ${destAddress}`,
-            nameLine,
+            `👤 Name: ${ride.customerName || '—'}`,
             `📱 Customer: ${parsed.format('INTERNATIONAL')}`,
             `⏰ Distance: ${distanceKm} km`,
-          ].filter(Boolean).join('\n');
+          ].join('\n');
           const keyboard = {
             inline_keyboard: [
               [

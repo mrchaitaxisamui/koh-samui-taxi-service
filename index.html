@@ -604,7 +604,15 @@
                 <div class="booking-form-fields">
                     <label class="booking-field">
                         <span class="booking-label">Pickup</span>
-                        <input type="text" id="pickup-input" class="booking-input" placeholder="Where are you?" autocomplete="off" required aria-required="true" aria-describedby="pickup-error">
+                        <div class="booking-input-wrap">
+                            <input type="text" id="pickup-input" class="booking-input" placeholder="Where are you?" autocomplete="off" required aria-required="true" aria-describedby="pickup-error">
+                            <button type="button" class="booking-location-btn" aria-label="Use my location" title="Use my location">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                                    <circle cx="12" cy="10" r="3"/>
+                                </svg>
+                            </button>
+                        </div>
                         <span class="booking-error" id="pickup-error" role="alert"></span>
                         <div class="autocomplete-dropdown" id="pickup-dropdown" aria-live="polite" role="listbox" aria-hidden="true"></div>
                     </label>
@@ -985,6 +993,59 @@
             }
             setupAutocomplete(pickupInput, pickupDropdown, function(d) { pickupData = d; });
             setupAutocomplete(destinationInput, destinationDropdown, function(d) { destinationData = d; });
+
+            var locationBtn = document.querySelector('.booking-location-btn');
+            if (locationBtn) {
+                locationBtn.addEventListener('click', function useMyLocation() {
+                    var btn = this;
+                    pickupInput.placeholder = 'Detecting your location...';
+                    btn.classList.add('loading');
+                    btn.disabled = true;
+                    showError('pickup', '');
+                    pickupInput.value = '';
+                    pickupData = null;
+                    function resetUi() {
+                        pickupInput.placeholder = 'Where are you?';
+                        btn.classList.remove('loading');
+                        btn.disabled = false;
+                    }
+                    if (!navigator.geolocation) {
+                        resetUi();
+                        showError('pickup', 'Location access denied. Please enter manually.');
+                        return;
+                    }
+                    navigator.geolocation.getCurrentPosition(
+                        function success(pos) {
+                            var lat = pos.coords.latitude;
+                            var lng = pos.coords.longitude;
+                            fetch(API_BASE + '/api/geocode?lat=' + encodeURIComponent(lat) + '&lng=' + encodeURIComponent(lng))
+                                .then(function(r) {
+                                    if (!r.ok) return r.json().then(function() { throw new Error('Geocode failed'); });
+                                    return r.json();
+                                })
+                                .then(function(data) {
+                                    resetUi();
+                                    if (data && data.formatted_address) {
+                                        pickupInput.value = data.formatted_address;
+                                        pickupData = { lat: lat, lng: lng, address: data.formatted_address };
+                                    } else {
+                                        showError('pickup', 'Could not get address. Please enter manually.');
+                                    }
+                                })
+                                .catch(function() {
+                                    resetUi();
+                                    showError('pickup', 'Could not get address. Please enter manually.');
+                                });
+                        },
+                        function err() {
+                            resetUi();
+                            showError('pickup', 'Location access denied. Please enter manually.');
+                        },
+                        { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+                    );
+                });
+            }
+            pickupInput.addEventListener('input', function() { showError('pickup', ''); });
 
             function validatePhone(val) {
                 if (typeof window.libphonenumber !== 'undefined' && window.libphonenumber.isValidPhoneNumber) {
