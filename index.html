@@ -1020,8 +1020,13 @@
                             var lng = pos.coords.longitude;
                             fetch(API_BASE + '/api/geocode?lat=' + encodeURIComponent(lat) + '&lng=' + encodeURIComponent(lng))
                                 .then(function(r) {
-                                    if (!r.ok) return r.json().then(function() { throw new Error('Geocode failed'); });
-                                    return r.json();
+                                    return r.json().then(function(data) {
+                                        if (!r.ok) {
+                                            var msg = (data && data.error) ? data.error : 'Could not get address. Please enter manually.';
+                                            throw new Error(msg);
+                                        }
+                                        return data;
+                                    });
                                 })
                                 .then(function(data) {
                                     resetUi();
@@ -1032,9 +1037,11 @@
                                         showError('pickup', 'Could not get address. Please enter manually.');
                                     }
                                 })
-                                .catch(function() {
+                                .catch(function(e) {
                                     resetUi();
-                                    showError('pickup', 'Could not get address. Please enter manually.');
+                                    var msg = (e && e.message) ? e.message : '';
+                                    if (!msg || msg.indexOf('Unexpected') !== -1) msg = 'Could not get address. Please enter manually.';
+                                    showError('pickup', msg);
                                 });
                         },
                         function err(e) {

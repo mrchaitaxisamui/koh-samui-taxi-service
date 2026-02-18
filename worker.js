@@ -101,21 +101,40 @@ async function handleGeocode(url, env) {
     return jsonResponse({ error: 'Geocoding not configured' }, 503);
   }
   try {
-    const res = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${encodeURIComponent(latNum)}%2C${encodeURIComponent(lngNum)}&key=${encodeURIComponent(key)}`
-    );
-    const data = await res.json();
-    if (data.status !== 'OK' || !Array.isArray(data.results) || data.results.length === 0) {
-      return jsonResponse({ error: 'No address found' }, 502);
+    const geoUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latNum},${lngNum}&key=${encodeURIComponent(key)}`;
+    const res = await fetch(geoUrl);
+    const data = await res.json().catch(() => ({}));
+    const status = data.status || 'UNKNOWN';
+    if (status === 'OK') {
+      if (!Array.isArray(data.results) || data.results.length === 0) {
+        return jsonResponse({ error: 'No address found for this location.' }, 502);
+      }
+      const formatted = data.results[0].formatted_address;
+      if (!formatted || typeof formatted !== 'string') {
+        return jsonResponse({ error: 'No address found for this location.' }, 502);
+      }
+      return jsonResponse({ formatted_address: formatted });
     }
-    const formatted = data.results[0].formatted_address;
-    if (!formatted || typeof formatted !== 'string') {
-      return jsonResponse({ error: 'No address found' }, 502);
+    if (status === 'ZERO_RESULTS') {
+      return jsonResponse({ error: 'No address found for this location.' }, 502);
     }
-    return jsonResponse({ formatted_address: formatted });
+    if (status === 'REQUEST_DENIED') {
+      const reason = (data.error_message || '').toLowerCase();
+      const hint = reason.includes('referrer') || reason.includes('restrict')
+        ? ' Use an API key that is not restricted to HTTP referrers (this request is server-side).'
+        : ' Enable Geocoding API and check key restrictions in Google Cloud Console.';
+      return jsonResponse({ error: 'Google Geocoding denied the request.' + hint }, 502);
+    }
+    if (status === 'OVER_QUERY_LIMIT') {
+      return jsonResponse({ error: 'Geocoding limit reached. Try again later or enter manually.' }, 502);
+    }
+    if (status === 'INVALID_REQUEST' || status === 'UNKNOWN_ERROR') {
+      return jsonResponse({ error: 'Geocoding request failed. Please enter manually.' }, 502);
+    }
+    return jsonResponse({ error: 'Geocoding failed (' + status + '). Please enter manually.' }, 502);
   } catch (e) {
     console.error('Geocode fetch failed', e);
-    return jsonResponse({ error: 'Geocoding failed' }, 502);
+    return jsonResponse({ error: 'Geocoding service unavailable. Please enter manually.' }, 502);
   }
 }
 
