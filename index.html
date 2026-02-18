@@ -600,6 +600,9 @@
             </div>
             <form class="booking-form" id="booking-form" novalidate aria-label="Request a ride">
                 <div class="booking-form-fields">
+                    <div class="booking-map-wrap" id="booking-map-wrap" aria-hidden="true" hidden>
+                        <div id="booking-map" class="booking-map" role="img" aria-label="Map showing pickup and destination"></div>
+                    </div>
                     <label class="booking-field">
                         <span class="booking-label">Pickup</span>
                         <div class="booking-input-wrap">
@@ -620,9 +623,6 @@
                         <span class="booking-error" id="destination-error" role="alert"></span>
                         <div class="autocomplete-dropdown" id="destination-dropdown" aria-live="polite" role="listbox" aria-hidden="true"></div>
                     </label>
-                    <div class="booking-map-wrap" id="booking-map-wrap" aria-hidden="true" hidden>
-                        <div id="booking-map" class="booking-map" role="img" aria-label="Map showing pickup and destination"></div>
-                    </div>
                     <label class="booking-field">
                         <span class="booking-label">What we should call you</span>
                         <input type="text" id="name-input" class="booking-input" placeholder="Your name" autocomplete="name" required aria-required="true" aria-describedby="name-error">
