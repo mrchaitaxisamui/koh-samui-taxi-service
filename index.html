@@ -922,7 +922,8 @@
             var bookingMap = null;
             var pickupMarker = null;
             var destMarker = null;
-            var debounceTimer = null;
+            var pickupDebounce = { id: null };
+            var destDebounce = { id: null };
             var DEBOUNCE_MS = 280;
 
             function updateBookingMap() {
@@ -948,80 +949,53 @@
                 }
             }
 
-            function searchPlaces(query, callback) {
+            function searchPlaces(query, callback, onError) {
                 if (!query || query.trim().length < 2) { callback([]); return; }
-                // #region agent log
-                var _url = API_BASE + '/api/places-autocomplete?input=' + encodeURIComponent(query.trim());
-                fetch('http://127.0.0.1:7242/ingest/1a45f81f-d6e3-4322-ac9a-5bdcf9f728a6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:searchPlaces',message:'autocomplete request',data:{query:query.trim(),url:_url},timestamp:Date.now(),hypothesisId:'A'})}).catch(function(){});
-                // #endregion
-                fetch(_url)
-                    .then(function(r) {
-                        // #region agent log
-                        fetch('http://127.0.0.1:7242/ingest/1a45f81f-d6e3-4322-ac9a-5bdcf9f728a6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:searchPlaces',message:'autocomplete response',data:{ok:r.ok,status:r.status},timestamp:Date.now(),hypothesisId:'A'})}).catch(function(){});
-                        // #endregion
-                        return r.json();
-                    })
-                    .then(function(data) {
-                        var preds = Array.isArray(data.predictions) ? data.predictions : [];
-                        var hasError = data.error != null;
-                        // #region agent log
-                        fetch('http://127.0.0.1:7242/ingest/1a45f81f-d6e3-4322-ac9a-5bdcf9f728a6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:searchPlaces',message:'autocomplete data',data:{predictionsCount:preds.length,hasError:hasError,error:data.error,firstPlaceId:preds[0]?preds[0].place_id:null},timestamp:Date.now(),hypothesisId:'A'})}).catch(function(){});
-                        // #endregion
+                fetch(API_BASE + '/api/places-autocomplete?input=' + encodeURIComponent(query.trim()))
+                    .then(function(r) { return r.json().then(function(data) { return { ok: r.ok, status: r.status, data: data }; }); })
+                    .then(function(res) {
+                        var preds = Array.isArray(res.data.predictions) ? res.data.predictions : [];
+                        if (!res.ok || res.data.error) {
+                            if (onError) onError(res.data.error || 'Address search unavailable. Try again.');
+                            callback([]);
+                            return;
+                        }
                         callback(preds);
                     })
-                    .catch(function(err) {
-                        // #region agent log
-                        fetch('http://127.0.0.1:7242/ingest/1a45f81f-d6e3-4322-ac9a-5bdcf9f728a6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:searchPlaces',message:'autocomplete fetch catch',data:{err:String(err)},timestamp:Date.now(),hypothesisId:'A'})}).catch(function(){});
-                        // #endregion
+                    .catch(function() {
+                        if (onError) onError('Address search unavailable. Check your connection.');
                         callback([]);
                     });
             }
 
-            function fetchPlaceDetails(placeId, callback) {
-                if (!placeId) {
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/1a45f81f-d6e3-4322-ac9a-5bdcf9f728a6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:fetchPlaceDetails',message:'place_id empty',data:{placeId:placeId},timestamp:Date.now(),hypothesisId:'B'})}).catch(function(){});
-                    // #endregion
-                    callback(null); return;
-                }
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/1a45f81f-d6e3-4322-ac9a-5bdcf9f728a6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:fetchPlaceDetails',message:'place-details request',data:{placeId:placeId},timestamp:Date.now(),hypothesisId:'B'})}).catch(function(){});
-                // #endregion
+            function fetchPlaceDetails(placeId, callback, onError) {
+                if (!placeId) { callback(null); return; }
                 fetch(API_BASE + '/api/place-details?place_id=' + encodeURIComponent(placeId))
-                    .then(function(r) {
-                        // #region agent log
-                        fetch('http://127.0.0.1:7242/ingest/1a45f81f-d6e3-4322-ac9a-5bdcf9f728a6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:fetchPlaceDetails',message:'place-details response',data:{ok:r.ok,status:r.status},timestamp:Date.now(),hypothesisId:'B'})}).catch(function(){});
-                        // #endregion
-                        return r.json();
-                    })
-                    .then(function(data) {
-                        var ok = data.lat != null && data.lng != null && data.address;
-                        // #region agent log
-                        fetch('http://127.0.0.1:7242/ingest/1a45f81f-d6e3-4322-ac9a-5bdcf9f728a6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:fetchPlaceDetails',message:'place-details data',data:{ok:ok,hasLat:data.lat!=null,hasLng:data.lng!=null,hasAddress:!!data.address,error:data.error},timestamp:Date.now(),hypothesisId:'B'})}).catch(function(){});
-                        // #endregion
-                        if (ok) {
-                            callback({ lat: data.lat, lng: data.lng, address: data.address });
+                    .then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
+                    .then(function(res) {
+                        if (res.ok && res.data.lat != null && res.data.lng != null && res.data.address) {
+                            callback({ lat: res.data.lat, lng: res.data.lng, address: res.data.address });
                         } else {
+                            if (onError) onError(res.data.error || 'Could not get address. Try another suggestion.');
                             callback(null);
                         }
                     })
-                    .catch(function(err) {
-                        // #region agent log
-                        fetch('http://127.0.0.1:7242/ingest/1a45f81f-d6e3-4322-ac9a-5bdcf9f728a6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:fetchPlaceDetails',message:'place-details catch',data:{err:String(err)},timestamp:Date.now(),hypothesisId:'B'})}).catch(function(){});
-                        // #endregion
+                    .catch(function() {
+                        if (onError) onError('Address details unavailable. Try another suggestion.');
                         callback(null);
                     });
             }
 
-            function setupAutocomplete(inputEl, dropdownEl, setData) {
+            function setupAutocomplete(inputEl, dropdownEl, setData, errorFieldId, debounceRef) {
                 inputEl.addEventListener('input', function() {
                     setData(null);
-                    clearTimeout(debounceTimer);
+                    showError(errorFieldId, '');
+                    clearTimeout(debounceRef.id);
                     var q = this.value.trim();
                     dropdownEl.innerHTML = '';
                     dropdownEl.setAttribute('aria-hidden', 'true');
                     if (q.length < 2) return;
-                    debounceTimer = setTimeout(function() {
+                    debounceRef.id = setTimeout(function() {
                         searchPlaces(q, function(predictions) {
                             dropdownEl.innerHTML = '';
                             if (!predictions.length) {
@@ -1031,6 +1005,7 @@
                             predictions.forEach(function(p, i) {
                                 var desc = p.description || '';
                                 var placeId = p.place_id || '';
+                                if (!placeId) return;
                                 var item = document.createElement('div');
                                 item.className = 'autocomplete-item';
                                 item.role = 'option';
@@ -1039,25 +1014,23 @@
                                 item.tabIndex = 0;
                                 item.dataset.placeId = placeId;
                                 item.dataset.description = desc;
-                                item.addEventListener('click', function() {
+                                item.addEventListener('mousedown', function(e) {
+                                    e.preventDefault();
                                     var pid = this.dataset.placeId;
                                     var descText = this.dataset.description;
-                                    // #region agent log
-                                    fetch('http://127.0.0.1:7242/ingest/1a45f81f-d6e3-4322-ac9a-5bdcf9f728a6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:autocomplete-item click',message:'suggestion selected',data:{placeId:pid,description:descText},timestamp:Date.now(),hypothesisId:'C'})}).catch(function(){});
-                                    // #endregion
                                     inputEl.value = descText;
                                     setData(null);
                                     dropdownEl.innerHTML = '';
                                     dropdownEl.setAttribute('aria-hidden', 'true');
+                                    showError(errorFieldId, '');
                                     fetchPlaceDetails(pid, function(d) {
                                         if (d) {
                                             setData(d);
                                             updateBookingMap();
-                                            // #region agent log
-                                            fetch('http://127.0.0.1:7242/ingest/1a45f81f-d6e3-4322-ac9a-5bdcf9f728a6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:place-details callback',message:'setData called',data:{lat:d.lat,lng:d.lng,addressLen:d.address?d.address.length:0},timestamp:Date.now(),hypothesisId:'B'})}).catch(function(){});
-                                            // #endregion
+                                        } else {
+                                            showError(errorFieldId, 'Could not get address. Try another suggestion.');
                                         }
-                                    });
+                                    }, function(msg) { showError(errorFieldId, msg); });
                                 });
                                 item.addEventListener('keydown', function(e) {
                                     if (e.key === 'Enter') { e.preventDefault(); this.click(); }
@@ -1065,18 +1038,18 @@
                                 dropdownEl.appendChild(item);
                             });
                             dropdownEl.setAttribute('aria-hidden', 'false');
-                        });
+                        }, function(msg) { showError(errorFieldId, msg); });
                     }, DEBOUNCE_MS);
                 });
                 inputEl.addEventListener('blur', function() {
                     setTimeout(function() {
                         dropdownEl.innerHTML = '';
                         dropdownEl.setAttribute('aria-hidden', 'true');
-                    }, 180);
+                    }, 200);
                 });
             }
-            setupAutocomplete(pickupInput, pickupDropdown, function(d) { pickupData = d; });
-            setupAutocomplete(destinationInput, destinationDropdown, function(d) { destinationData = d; });
+            setupAutocomplete(pickupInput, pickupDropdown, function(d) { pickupData = d; }, 'pickup', pickupDebounce);
+            setupAutocomplete(destinationInput, destinationDropdown, function(d) { destinationData = d; }, 'destination', destDebounce);
             pickupInput.addEventListener('input', function() {
                 if (!this.value.trim()) { pickupData = null; updateBookingMap(); }
             });
@@ -1291,9 +1264,6 @@
 
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/1a45f81f-d6e3-4322-ac9a-5bdcf9f728a6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:form submit',message:'submit state',data:{pickupDataNull:!pickupData,destinationDataNull:!destinationData,pickupValue:pickupInput.value.trim().substring(0,40),destValue:destinationInput.value.trim().substring(0,40)},timestamp:Date.now(),hypothesisId:'D'})}).catch(function(){});
-                // #endregion
                 showError('pickup', '');
                 showError('destination', '');
                 showError('name', '');
