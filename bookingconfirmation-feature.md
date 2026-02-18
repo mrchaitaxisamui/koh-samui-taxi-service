@@ -52,6 +52,16 @@ Driver phone numbers are **not** sent by Telegram when a driver accepts. We use 
 - **Behaviour:** On accept, the worker looks up `cb.from.id` in the parsed `DRIVER_PHONES` map and stores the normalized number on the ride as `driverPhone`. `GET /api/ride-status/:rideId` returns `driverPhone`; the confirmation page shows a “Driver phone” row with a `tel:` link when present.
 - **Empty or invalid:** If `DRIVER_PHONES` is missing, `{}`, or the driver’s ID isn’t in the map, `driverPhone` is not set and the confirmation page hides the driver-phone row.
 
+## Current driver setup
+
+| Driver | Telegram ID | Phone | Status |
+|--------|-------------|-------|--------|
+| 1 | 5391534676 | +66 82 424 5439 | Configured in `wrangler.toml` |
+| 2 | — | — | Pending: have driver accept a ride so ID appears in group, then add ID + phone to `DRIVER_PHONES` |
+| 3 | — | — | Pending: have driver accept a ride so ID appears in group, then add ID + phone to `DRIVER_PHONES` |
+
+With `SHOW_DRIVER_ID = "1"`, when driver 2 or 3 accepts a ride, the group message will show their ID (e.g. `(ID: 123456789)`). Add each to `DRIVER_PHONES` in the same format as driver 1, then set `SHOW_DRIVER_ID = "0"` and redeploy.
+
 ## Edge cases
 
 - **No name:** If Telegram doesn’t send a name or it’s empty, `driverName` is omitted or set to null; confirmation page shows “Your driver” or only “A driver is on the way” and omits the driver row.

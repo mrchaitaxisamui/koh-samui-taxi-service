@@ -98,6 +98,12 @@ export default {
     if (request.method === 'GET' && url.pathname === '/api/distance-matrix') {
       return handleDistanceMatrix(url, env);
     }
+    // GET /api/driver-photo/:rideId — proxy driver's Telegram profile photo (requires accepted ride with driver)
+    if (request.method === 'GET' && url.pathname.startsWith('/api/driver-photo/')) {
+      const rideId = url.pathname.replace(/^\/api\/driver-photo\//, '').split('/')[0];
+      if (!rideId) return jsonResponse({ error: 'Missing rideId' }, 400);
+      return handleDriverPhoto(rideId, env);
+    }
 
     return jsonResponse({ error: 'Not found' }, 404);
   },
@@ -480,6 +486,57 @@ async function handleRideStatus(rideId, env) {
   });
 }
 
+/** GET /api/driver-photo/:rideId — return driver's Telegram profile photo (proxied). */
+async function handleDriverPhoto(rideId, env) {
+  const token = env.TELEGRAM_BOT_TOKEN;
+  if (!token) return new Response(null, { status: 404, headers: CORS_HEADERS });
+  const raw = await env.RIDES.get(rideId);
+  if (!raw) return new Response(null, { status: 404, headers: CORS_HEADERS });
+  const ride = JSON.parse(raw);
+  if (ride.status !== 'accepted' || ride.driverTelegramId == null) {
+    return new Response(null, { status: 404, headers: CORS_HEADERS });
+  }
+  try {
+    const photosRes = await fetch(
+      `https://api.telegram.org/bot${token}/getUserProfilePhotos?user_id=${ride.driverTelegramId}&limit=1`
+    );
+    const photosData = await photosRes.json().catch(() => ({}));
+    if (!photosData.ok || !photosData.result?.photos?.length) {
+      return new Response(null, { status: 404, headers: CORS_HEADERS });
+    }
+    const sizes = photosData.result.photos[0];
+    if (!Array.isArray(sizes) || sizes.length === 0) return new Response(null, { status: 404, headers: CORS_HEADERS });
+    const largest = sizes[sizes.length - 1];
+    const fileId = largest?.file_id;
+    if (!fileId) return new Response(null, { status: 404, headers: CORS_HEADERS });
+    const fileRes = await fetch(`https://api.telegram.org/bot${token}/getFile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file_id: fileId }),
+    });
+    const fileData = await fileRes.json().catch(() => ({}));
+    if (!fileData.ok || !fileData.result?.file_path) {
+      return new Response(null, { status: 404, headers: CORS_HEADERS });
+    }
+    const filePath = fileData.result.file_path;
+    const imageRes = await fetch(`https://api.telegram.org/file/bot${token}/${filePath}`);
+    if (!imageRes.ok) return new Response(null, { status: 404, headers: CORS_HEADERS });
+    const contentType = imageRes.headers.get('Content-Type') || 'image/jpeg';
+    const body = await imageRes.arrayBuffer();
+    return new Response(body, {
+      status: 200,
+      headers: {
+        'Content-Type': contentType,
+        'Cache-Control': 'private, max-age=3600',
+        ...CORS_HEADERS,
+      },
+    });
+  } catch (e) {
+    console.error('driver photo fetch failed', e);
+    return new Response(null, { status: 404, headers: CORS_HEADERS });
+  }
+}
+
 /** Parse DRIVER_PHONES JSON from env. Returns null if missing/invalid. */
 function parseDriverPhones(raw) {
   if (raw == null || typeof raw !== 'string') return null;
@@ -537,6 +594,7 @@ async function handleTelegramWebhook(request, env, ctx) {
     const first = (cb.from.first_name || '').trim();
     const last = (cb.from.last_name || '').trim();
     ride.driverName = [first, last].filter(Boolean).join(' ') || null;
+    ride.driverTelegramId = cb.from.id;
     const driverPhones = parseDriverPhones(env.DRIVER_PHONES);
     const idStr = String(cb.from.id);
     if (driverPhones && driverPhones[idStr]) ride.driverPhone = normalizeDriverPhone(driverPhones[idStr]);

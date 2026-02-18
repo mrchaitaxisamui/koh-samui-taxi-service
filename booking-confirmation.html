@@ -32,8 +32,11 @@
                 </div>
 
                 <div class="confirmation-driver" id="confirmation-driver" hidden>
-                    <span class="confirmation-driver-label">Your driver</span>
-                    <span class="confirmation-driver-value" id="driver-name">—</span>
+                    <div class="confirmation-driver-info">
+                        <span class="confirmation-driver-label">Your driver</span>
+                        <span class="confirmation-driver-value" id="driver-name">—</span>
+                    </div>
+                    <img id="driver-photo" class="confirmation-driver-photo" src="" alt="" role="presentation" hidden>
                 </div>
 
                 <div class="confirmation-driver-phone" id="confirmation-driver-phone" hidden>
@@ -191,6 +194,13 @@
                         driverEl.hidden = false;
                         var driverCopyEl = document.getElementById('driver-copy');
                         if (driverCopyEl) driverCopyEl.textContent = driverName + ' has already accepted your request';
+                        var driverPhotoEl = document.getElementById('driver-photo');
+                        if (driverPhotoEl) {
+                            driverPhotoEl.alt = 'Photo of ' + driverName;
+                            driverPhotoEl.onload = function() { driverPhotoEl.hidden = false; };
+                            driverPhotoEl.onerror = function() { driverPhotoEl.hidden = true; };
+                            driverPhotoEl.src = API_BASE + '/api/driver-photo/' + rideId;
+                        }
                     } else {
                         driverEl.hidden = true;
                         var driverCopyEl = document.getElementById('driver-copy');
