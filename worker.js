@@ -476,7 +476,27 @@ async function handleRideStatus(rideId, env) {
     distanceKm: ride.distanceKm,
     etaMinutes: ride.etaMinutes ?? null,
     driverName: ride.driverName ?? null,
+    driverPhone: ride.driverPhone ?? null,
   });
+}
+
+/** Parse DRIVER_PHONES JSON from env. Returns null if missing/invalid. */
+function parseDriverPhones(raw) {
+  if (raw == null || typeof raw !== 'string') return null;
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Normalize phone for storage (E.164-style: optional + then digits). */
+function normalizeDriverPhone(phone) {
+  const s = String(phone || '').trim();
+  const digits = s.replace(/\D/g, '');
+  if (digits.length === 0) return null;
+  return (s.startsWith('+') ? '+' : '') + digits;
 }
 
 async function handleTelegramWebhook(request, env, ctx) {
@@ -517,6 +537,9 @@ async function handleTelegramWebhook(request, env, ctx) {
     const first = (cb.from.first_name || '').trim();
     const last = (cb.from.last_name || '').trim();
     ride.driverName = [first, last].filter(Boolean).join(' ') || null;
+    const driverPhones = parseDriverPhones(env.DRIVER_PHONES);
+    const idStr = String(cb.from.id);
+    if (driverPhones && driverPhones[idStr]) ride.driverPhone = normalizeDriverPhone(driverPhones[idStr]);
   }
   const token = env.TELEGRAM_BOT_TOKEN;
   const answerText = action === 'accept' ? `Accepted! ETA ${ride.etaMinutes || 15} min` : 'Declined';
@@ -529,7 +552,10 @@ async function handleTelegramWebhook(request, env, ctx) {
   const chatId = cb.message?.chat?.id;
   const messageId = cb.message?.message_id;
   const etaLabel = ride.etaMinutes ? ` • ETA ${ride.etaMinutes} min` : '';
-  const suffix = action === 'accept' ? `\n\n— ✅ Accepted${etaLabel}` : '\n\n— ❌ Declined';
+  let suffix = action === 'accept' ? `\n\n— ✅ Accepted${etaLabel}` : '\n\n— ❌ Declined';
+  if (action === 'accept' && cb.from && env.SHOW_DRIVER_ID === '1') {
+    suffix += ` (ID: ${cb.from.id})`;
+  }
   const origText = cb.message?.text || '';
   const newText = origText + suffix;
   const editPromise =

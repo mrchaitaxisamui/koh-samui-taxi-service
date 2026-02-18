@@ -36,6 +36,11 @@
                     <span class="confirmation-driver-value" id="driver-name">—</span>
                 </div>
 
+                <div class="confirmation-driver-phone" id="confirmation-driver-phone" hidden>
+                    <span class="confirmation-driver-phone-label">Driver phone</span>
+                    <a class="confirmation-driver-phone-value" id="driver-phone-link" href="#">—</a>
+                </div>
+
                 <div class="confirmation-route">
                     <div class="confirmation-route-row">
                         <span class="confirmation-route-dot confirmation-route-dot--green" aria-hidden="true"></span>
@@ -190,6 +195,17 @@
                         driverEl.hidden = true;
                         var driverCopyEl = document.getElementById('driver-copy');
                         if (driverCopyEl) driverCopyEl.textContent = 'A driver has already accepted your request';
+                    }
+
+                    var driverPhone = ride.driverPhone && String(ride.driverPhone).trim();
+                    var driverPhoneBlock = document.getElementById('confirmation-driver-phone');
+                    var driverPhoneLink = document.getElementById('driver-phone-link');
+                    if (driverPhone) {
+                        driverPhoneLink.href = 'tel:' + driverPhone.replace(/\s/g, '');
+                        driverPhoneLink.textContent = driverPhone.replace(/^(\+\d{2})(\d{2})(\d{3})(\d{4})$/, '$1 $2 $3 $4').trim() || driverPhone;
+                        driverPhoneBlock.hidden = false;
+                    } else {
+                        driverPhoneBlock.hidden = true;
                     }
 
                     var pickupAddr = ride.pickup && ride.pickup.address ? ride.pickup.address : 'Your pickup';

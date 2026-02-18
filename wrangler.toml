@@ -17,6 +17,11 @@ id = "4873427201684cafbac778dc3c09ba86"
 
 [vars]
 TELEGRAM_DRIVER_CHAT_ID = "-5178679297"
+# Map Telegram user ID (string) -> driver phone (E.164, e.g. +66824245439). To find IDs: set SHOW_DRIVER_ID = "1", deploy, have each driver accept a ride — their ID appears in the group message. Then set DRIVER_PHONES and set SHOW_DRIVER_ID = "0".
+# Example: DRIVER_PHONES = "{\"123456789\":\"+66824245439\",\"987654321\":\"+66811234567\"}"
+DRIVER_PHONES = "{}"
+# Set to "1" to show each driver's Telegram ID in the group when they accept (so you can copy IDs into DRIVER_PHONES). Set to "0" or remove after.
+SHOW_DRIVER_ID = "1"
 # TELEGRAM_BOT_TOKEN must be set as a secret: npx wrangler secret put TELEGRAM_BOT_TOKEN
 # GOOGLE_MAPS_API_KEY (for /api/geocode, /api/places-autocomplete, /api/place-details, /api/static-map): npx wrangler secret put GOOGLE_MAPS_API_KEY
 # Key must not be restricted to "HTTP referrers" only (Worker calls Google server-side). Use "None" or "IP addresses".
