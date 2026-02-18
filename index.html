@@ -958,6 +958,14 @@
                                 dropdownEl.setAttribute('aria-hidden', 'true');
                                 return;
                             }
+                            var seen = {};
+                            features = features.filter(function(f) {
+                                var addr = formatAddress(f);
+                                var key = addr.toLowerCase().replace(/\s+/g, ' ').trim();
+                                if (seen[key]) return false;
+                                seen[key] = true;
+                                return true;
+                            });
                             features.forEach(function(f, i) {
                                 var item = document.createElement('div');
                                 item.className = 'autocomplete-item';
