@@ -9,8 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Uber+Move:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Leaflet for booking modal map (no API key). Address autocomplete via worker (key server-side only). -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Google Maps JS API + Places for booking modal map and address autocomplete. Set window.__GOOGLE_MAPS_API_KEY before this page loads (e.g. in a prior inline script) for map and autocomplete to work. -->
 </head>
 <body>
     <!-- Navigation -->
@@ -678,7 +677,8 @@
 
     <script id="lottie-script" src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" integrity="sha512-jEnuDt6jfecCjthQAJ+ed0MTVA++5ZKmlUcmDGBv2vUI/REn6FuIdixLNnQT+vKusE2hhTk2is3cFvv5wA+Sgg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://unpkg.com/libphonenumber-js@1/bundle/libphonenumber-min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Set window.__GOOGLE_MAPS_API_KEY (Maps JavaScript API + Places API) for booking map and address autocomplete. -->
+    <script>window.__GOOGLE_MAPS_API_KEY = window.__GOOGLE_MAPS_API_KEY || '';</script>
     <script>
         // Hero + Unlimited Lottie animations (lottie-web, JSON) - runs after lottie script loads
         (function initLottieAnimations() {
@@ -888,12 +888,12 @@
             updateRatesUI();
         })();
 
-        // ========== Booking Form: Worker-proxied Places autocomplete (key server-side only), Validation, Submit ==========
+        // ========== Booking Form: Google Maps API (map + Places Autocomplete), Validation, Submit ==========
         (function initBookingForm() {
             var TIMEOUT_MS = 120000; // 2 min polling window (Phase 3)
             var POLL_INTERVAL_MS = 2000;  // 2s so user sees accept/decline within ~2s
-            // Set to your Cloudflare Worker URL, e.g. https://mrchai-dispatch.<your-subdomain>.workers.dev
             var API_BASE = 'https://mrchai-dispatch.kohsamui-taxi.workers.dev';
+            var GOOGLE_MAPS_API_KEY = window.__GOOGLE_MAPS_API_KEY || '';
 
             var form = document.getElementById('booking-form');
             var bookingModal = document.getElementById('booking-modal');
@@ -919,28 +919,41 @@
 
             var pickupData = null;
             var destinationData = null;
-            var bookingMap = null;
+            var googleMap = null;
             var pickupMarker = null;
             var destMarker = null;
-            var pickupDebounce = { id: null };
-            var destDebounce = { id: null };
-            var DEBOUNCE_MS = 280;
+            var kohSamuiBounds = { south: 9.38, west: 99.85, north: 9.62, east: 100.12 };
 
             function updateBookingMap() {
                 if (!bookingMapEl || !bookingMapWrap) return;
-                if (pickupData && destinationData && typeof L !== 'undefined') {
-                    if (!bookingMap) {
-                        bookingMap = L.map(bookingMapEl).setView([9.5, 100.0], 10);
-                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                        }).addTo(bookingMap);
+                if (pickupData && destinationData && typeof google !== 'undefined' && google.maps) {
+                    if (!googleMap) {
+                        googleMap = new google.maps.Map(bookingMapEl, {
+                            center: { lat: 9.5, lng: 100.0 },
+                            zoom: 10,
+                            disableDefaultUI: false,
+                            zoomControl: true,
+                            mapTypeControl: false,
+                            streetViewControl: false,
+                            fullscreenControl: true
+                        });
                     }
-                    if (pickupMarker) bookingMap.removeLayer(pickupMarker);
-                    if (destMarker) bookingMap.removeLayer(destMarker);
-                    pickupMarker = L.marker([pickupData.lat, pickupData.lng]).addTo(bookingMap).bindTooltip('Pickup');
-                    destMarker = L.marker([destinationData.lat, destinationData.lng]).addTo(bookingMap).bindTooltip('Destination');
-                    var bounds = L.latLngBounds([pickupData.lat, pickupData.lng], [destinationData.lat, destinationData.lng]);
-                    bookingMap.fitBounds(bounds, { padding: [24, 24] });
+                    if (pickupMarker) pickupMarker.setMap(null);
+                    if (destMarker) destMarker.setMap(null);
+                    pickupMarker = new google.maps.Marker({
+                        position: { lat: pickupData.lat, lng: pickupData.lng },
+                        map: googleMap,
+                        title: 'Pickup'
+                    });
+                    destMarker = new google.maps.Marker({
+                        position: { lat: destinationData.lat, lng: destinationData.lng },
+                        map: googleMap,
+                        title: 'Destination'
+                    });
+                    var bounds = new google.maps.LatLngBounds();
+                    bounds.extend({ lat: pickupData.lat, lng: pickupData.lng });
+                    bounds.extend({ lat: destinationData.lat, lng: destinationData.lng });
+                    googleMap.fitBounds(bounds, 48);
                     bookingMapWrap.hidden = false;
                     bookingMapWrap.setAttribute('aria-hidden', 'false');
                 } else {
@@ -949,113 +962,76 @@
                 }
             }
 
-            function searchPlaces(query, callback, onError) {
-                if (!query || query.trim().length < 2) { callback([]); return; }
-                fetch(API_BASE + '/api/places-autocomplete?input=' + encodeURIComponent(query.trim()))
-                    .then(function(r) { return r.json().then(function(data) { return { ok: r.ok, status: r.status, data: data }; }); })
-                    .then(function(res) {
-                        var preds = Array.isArray(res.data.predictions) ? res.data.predictions : [];
-                        if (!res.ok || res.data.error) {
-                            if (onError) onError(res.data.error || 'Address search unavailable. Try again.');
-                            callback([]);
-                            return;
-                        }
-                        callback(preds);
-                    })
-                    .catch(function() {
-                        if (onError) onError('Address search unavailable. Check your connection.');
-                        callback([]);
-                    });
-            }
-
-            function fetchPlaceDetails(placeId, callback, onError) {
-                if (!placeId) { callback(null); return; }
-                fetch(API_BASE + '/api/place-details?place_id=' + encodeURIComponent(placeId))
-                    .then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
-                    .then(function(res) {
-                        if (res.ok && res.data.lat != null && res.data.lng != null && res.data.address) {
-                            callback({ lat: res.data.lat, lng: res.data.lng, address: res.data.address });
-                        } else {
-                            if (onError) onError(res.data.error || 'Could not get address. Try another suggestion.');
-                            callback(null);
-                        }
-                    })
-                    .catch(function() {
-                        if (onError) onError('Address details unavailable. Try another suggestion.');
-                        callback(null);
-                    });
-            }
-
-            function setupAutocomplete(inputEl, dropdownEl, setData, errorFieldId, debounceRef) {
-                inputEl.addEventListener('input', function() {
-                    setData(null);
-                    showError(errorFieldId, '');
-                    clearTimeout(debounceRef.id);
-                    var q = this.value.trim();
-                    dropdownEl.innerHTML = '';
-                    dropdownEl.setAttribute('aria-hidden', 'true');
-                    if (q.length < 2) return;
-                    debounceRef.id = setTimeout(function() {
-                        searchPlaces(q, function(predictions) {
-                            dropdownEl.innerHTML = '';
-                            if (!predictions.length) {
-                                dropdownEl.setAttribute('aria-hidden', 'true');
-                                return;
-                            }
-                            predictions.forEach(function(p, i) {
-                                var desc = p.description || '';
-                                var placeId = p.place_id || '';
-                                if (!placeId) return;
-                                var item = document.createElement('div');
-                                item.className = 'autocomplete-item';
-                                item.role = 'option';
-                                item.id = dropdownEl.id + '-opt-' + i;
-                                item.textContent = desc;
-                                item.tabIndex = 0;
-                                item.dataset.placeId = placeId;
-                                item.dataset.description = desc;
-                                item.addEventListener('mousedown', function(e) {
-                                    e.preventDefault();
-                                    var pid = this.dataset.placeId;
-                                    var descText = this.dataset.description;
-                                    inputEl.value = descText;
-                                    setData(null);
-                                    dropdownEl.innerHTML = '';
-                                    dropdownEl.setAttribute('aria-hidden', 'true');
-                                    showError(errorFieldId, '');
-                                    fetchPlaceDetails(pid, function(d) {
-                                        if (d) {
-                                            setData(d);
-                                            updateBookingMap();
-                                        } else {
-                                            showError(errorFieldId, 'Could not get address. Try another suggestion.');
-                                        }
-                                    }, function(msg) { showError(errorFieldId, msg); });
-                                });
-                                item.addEventListener('keydown', function(e) {
-                                    if (e.key === 'Enter') { e.preventDefault(); this.click(); }
-                                });
-                                dropdownEl.appendChild(item);
-                            });
-                            dropdownEl.setAttribute('aria-hidden', 'false');
-                        }, function(msg) { showError(errorFieldId, msg); });
-                    }, DEBOUNCE_MS);
+            function initGoogleMapsAndAutocomplete() {
+                if (typeof google === 'undefined' || !google.maps || !google.maps.places) {
+                    showError('pickup', 'Google Maps failed to load. Check your API key.');
+                    return;
+                }
+                var defaultBounds = new google.maps.LatLngBounds(
+                    new google.maps.LatLng(kohSamuiBounds.south, kohSamuiBounds.west),
+                    new google.maps.LatLng(kohSamuiBounds.north, kohSamuiBounds.east)
+                );
+                var autocompleteOpts = {
+                    bounds: defaultBounds,
+                    componentRestrictions: { country: 'th' },
+                    fields: ['formatted_address', 'geometry', 'place_id'],
+                    types: ['address', 'establishment']
+                };
+                var pickupAutocomplete = new google.maps.places.Autocomplete(pickupInput, autocompleteOpts);
+                var destAutocomplete = new google.maps.places.Autocomplete(destinationInput, autocompleteOpts);
+                pickupAutocomplete.addListener('place_changed', function() {
+                    var place = pickupAutocomplete.getPlace();
+                    if (!place.geometry || !place.geometry.location) {
+                        showError('pickup', 'Please select a suggestion from the dropdown.');
+                        return;
+                    }
+                    showError('pickup', '');
+                    pickupData = {
+                        lat: place.geometry.location.lat(),
+                        lng: place.geometry.location.lng(),
+                        address: place.formatted_address || place.name || ''
+                    };
+                    if (pickupData.address) pickupInput.value = pickupData.address;
+                    updateBookingMap();
                 });
-                inputEl.addEventListener('blur', function() {
-                    setTimeout(function() {
-                        dropdownEl.innerHTML = '';
-                        dropdownEl.setAttribute('aria-hidden', 'true');
-                    }, 200);
+                destAutocomplete.addListener('place_changed', function() {
+                    var place = destAutocomplete.getPlace();
+                    if (!place.geometry || !place.geometry.location) {
+                        showError('destination', 'Please select a suggestion from the dropdown.');
+                        return;
+                    }
+                    showError('destination', '');
+                    destinationData = {
+                        lat: place.geometry.location.lat(),
+                        lng: place.geometry.location.lng(),
+                        address: place.formatted_address || place.name || ''
+                    };
+                    if (destinationData.address) destinationInput.value = destinationData.address;
+                    updateBookingMap();
+                });
+                pickupInput.addEventListener('input', function() {
+                    if (!this.value.trim()) { pickupData = null; updateBookingMap(); }
+                });
+                destinationInput.addEventListener('input', function() {
+                    if (!this.value.trim()) { destinationData = null; updateBookingMap(); }
                 });
             }
-            setupAutocomplete(pickupInput, pickupDropdown, function(d) { pickupData = d; }, 'pickup', pickupDebounce);
-            setupAutocomplete(destinationInput, destinationDropdown, function(d) { destinationData = d; }, 'destination', destDebounce);
-            pickupInput.addEventListener('input', function() {
-                if (!this.value.trim()) { pickupData = null; updateBookingMap(); }
-            });
-            destinationInput.addEventListener('input', function() {
-                if (!this.value.trim()) { destinationData = null; updateBookingMap(); }
-            });
+
+            if (GOOGLE_MAPS_API_KEY) {
+                var script = document.createElement('script');
+                script.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(GOOGLE_MAPS_API_KEY) + '&libraries=places&callback=__initBookingGoogleMaps';
+                script.async = true;
+                script.defer = true;
+                window.__initBookingGoogleMaps = function() {
+                    initGoogleMapsAndAutocomplete();
+                    window.__initBookingGoogleMaps = null;
+                };
+                document.head.appendChild(script);
+            } else {
+                pickupInput.addEventListener('input', function() { if (!this.value.trim()) pickupData = null; });
+                destinationInput.addEventListener('input', function() { if (!this.value.trim()) destinationData = null; });
+                console.warn('Koh Samui Taxi: Set window.__GOOGLE_MAPS_API_KEY (Maps JavaScript API + Places API) for address autocomplete and map.');
+            }
 
             var locationBtn = document.querySelector('.booking-location-btn');
             if (locationBtn) {

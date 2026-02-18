@@ -101,20 +101,28 @@ var API_BASE = 'https://mrchai-dispatch.<your-subdomain>.workers.dev';
 
 Replace `<your-subdomain>` with your actual Workers subdomain (e.g. `kohsamui-taxi` if your URL is `https://mrchai-dispatch.kohsamui-taxi.workers.dev`).
 
-### 4.2 Google Maps API key (worker only – never in the frontend)
+### 4.2 Google Maps API keys
 
-Address autocomplete and "Use my location" geocoding are **proxied through the worker**. The API key is set only as a **Wrangler secret** and never appears in the frontend or in git:
+**Frontend (map + address autocomplete)**  
+The booking form uses the **Google Maps JavaScript API** with the **Places** library for the map and for Google’s native address autocomplete dropdown. Set your key in the frontend before the main script runs, for example in `index.html`:
+
+```html
+<script>window.__GOOGLE_MAPS_API_KEY = 'YOUR_KEY_HERE';</script>
+```
+
+1. In [Google Cloud Console](https://console.cloud.google.com/), enable **Maps JavaScript API** and **Places API**.
+2. Create an API key and (optional) restrict it to your site’s domains (e.g. `https://yourdomain.com/*`).
+3. If the key is not set, the form will show a console message and address autocomplete/map will not work.
+
+**Worker (geocode for “Use my location”)**  
+“Use my location” still uses the worker so the key stays server-side. Set the same or a second key as a Wrangler secret:
 
 ```bash
 npx wrangler secret put GOOGLE_MAPS_API_KEY
-# Paste your Google API key when prompted
 ```
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create or select a project
-3. Enable **Places API** (and **Geocoding API** if you use "Use my location")
-4. Create an API key under Credentials
-5. For server-side use, do **not** restrict the key to HTTP referrers (the worker calls Google from Cloudflare). You can restrict by IP if needed, or leave unrestricted and rely on keeping the secret out of the repo.
+1. Enable **Geocoding API** for the key used by the worker.
+2. For server-side use, do **not** restrict that key to HTTP referrers. You can restrict by IP or leave unrestricted.
 
 ---
 
