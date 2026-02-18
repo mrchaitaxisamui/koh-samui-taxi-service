@@ -60,7 +60,7 @@ export default {
       return jsonResponse({
         ok: true,
         service: 'mrchai-dispatch',
-        endpoints: ['POST /api/ride-request', 'GET /api/ride-status/:rideId', 'POST /api/telegram-webhook', 'GET /api/places-autocomplete', 'GET /api/place-details', 'GET /api/geocode'],
+        endpoints: ['POST /api/ride-request', 'GET /api/ride-status/:rideId', 'POST /api/telegram-webhook', 'GET /api/places-autocomplete', 'GET /api/place-details', 'GET /api/geocode', 'GET /api/static-map'],
       });
     }
 
@@ -89,6 +89,10 @@ export default {
     // GET /api/place-details?place_id=... — Google Place Details for lat/lng/address (key server-side)
     if (request.method === 'GET' && url.pathname === '/api/place-details') {
       return handlePlaceDetails(url, env);
+    }
+    // GET /api/static-map?pickup_lat=...&pickup_lng=...&dest_lat=...&dest_lng=... — static map image (key server-side)
+    if (request.method === 'GET' && url.pathname === '/api/static-map') {
+      return handleStaticMap(url, env);
     }
 
     return jsonResponse({ error: 'Not found' }, 404);
@@ -228,6 +232,44 @@ async function handlePlaceDetails(url, env) {
   } catch (e) {
     console.error('Place details fetch failed', e);
     return jsonResponse({ error: 'Place details unavailable.' }, 502);
+  }
+}
+
+/** GET /api/static-map?pickup_lat=...&pickup_lng=...&dest_lat=...&dest_lng=... — proxy Google Static Map (key server-side). */
+async function handleStaticMap(url, env) {
+  const pickupLat = Number(url.searchParams.get('pickup_lat'));
+  const pickupLng = Number(url.searchParams.get('pickup_lng'));
+  const destLat = Number(url.searchParams.get('dest_lat'));
+  const destLng = Number(url.searchParams.get('dest_lng'));
+  if (!Number.isFinite(pickupLat) || !Number.isFinite(pickupLng) || !Number.isFinite(destLat) || !Number.isFinite(destLng)) {
+    return jsonResponse({ error: 'Missing or invalid pickup_lat, pickup_lng, dest_lat, dest_lng' }, 400);
+  }
+  const key = env.GOOGLE_MAPS_API_KEY;
+  if (!key) {
+    return jsonResponse({ error: 'Static map not configured' }, 503);
+  }
+  const params = new URLSearchParams({
+    size: '600x180',
+    scale: '2',
+    key,
+    markers: `color:green|label:P|${pickupLat},${pickupLng}`,
+  });
+  params.append('markers', `color:red|label:D|${destLat},${destLng}`);
+  try {
+    const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?${params.toString()}`;
+    const res = await fetch(mapUrl);
+    if (!res.ok) {
+      return jsonResponse({ error: 'Static map failed' }, 502);
+    }
+    const contentType = res.headers.get('Content-Type') || 'image/png';
+    const body = await res.arrayBuffer();
+    return new Response(body, {
+      status: 200,
+      headers: { 'Content-Type': contentType, ...CORS_HEADERS, 'Cache-Control': 'private, max-age=300' },
+    });
+  } catch (e) {
+    console.error('Static map fetch failed', e);
+    return jsonResponse({ error: 'Static map unavailable' }, 502);
   }
 }
 

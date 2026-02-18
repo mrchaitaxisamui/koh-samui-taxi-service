@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Uber+Move:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Booking: Google Maps API (map + Places Autocomplete). Set window.__GOOGLE_MAPS_API_KEY for map and autocomplete. -->
+    <!-- Booking: address autocomplete via worker (key server-side). Optional window.__GOOGLE_MAPS_API_KEY for interactive map. -->
 </head>
 <body>
     <!-- Navigation -->
@@ -677,7 +677,7 @@
 
     <script id="lottie-script" src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" integrity="sha512-jEnuDt6jfecCjthQAJ+ed0MTVA++5ZKmlUcmDGBv2vUI/REn6FuIdixLNnQT+vKusE2hhTk2is3cFvv5wA+Sgg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://unpkg.com/libphonenumber-js@1/bundle/libphonenumber-min.js"></script>
-    <!-- Set window.__GOOGLE_MAPS_API_KEY (Maps JavaScript API + Places API) for booking map and address autocomplete. -->
+    <!-- Optional: set window.__GOOGLE_MAPS_API_KEY for interactive map. Autocomplete uses worker (key server-side). -->
     <script>window.__GOOGLE_MAPS_API_KEY = window.__GOOGLE_MAPS_API_KEY || '';</script>
     <script>
         // Hero + Unlimited Lottie animations (lottie-web, JSON) - runs after lottie script loads
@@ -924,9 +924,17 @@
             var destMarker = null;
             var kohSamuiBounds = { south: 9.38, west: 99.85, north: 9.62, east: 100.12 };
 
+            var staticMapImg = null;
+
             function updateBookingMap() {
                 if (!bookingMapEl || !bookingMapWrap) return;
-                if (pickupData && destinationData && typeof google !== 'undefined' && google.maps) {
+                if (!pickupData || !destinationData) {
+                    bookingMapWrap.hidden = true;
+                    bookingMapWrap.setAttribute('aria-hidden', 'true');
+                    if (staticMapImg) { staticMapImg.remove(); staticMapImg = null; }
+                    return;
+                }
+                if (typeof google !== 'undefined' && google.maps) {
                     if (!googleMap) {
                         googleMap = new google.maps.Map(bookingMapEl, {
                             center: { lat: 9.5, lng: 100.0 },
@@ -938,6 +946,8 @@
                             fullscreenControl: true
                         });
                     }
+                    if (staticMapImg) { staticMapImg.remove(); staticMapImg = null; }
+                    bookingMapEl.hidden = false;
                     if (pickupMarker) pickupMarker.setMap(null);
                     if (destMarker) destMarker.setMap(null);
                     pickupMarker = new google.maps.Marker({
@@ -957,8 +967,19 @@
                     bookingMapWrap.hidden = false;
                     bookingMapWrap.setAttribute('aria-hidden', 'false');
                 } else {
-                    bookingMapWrap.hidden = true;
-                    bookingMapWrap.setAttribute('aria-hidden', 'true');
+                    bookingMapEl.hidden = true;
+                    if (!staticMapImg) {
+                        staticMapImg = document.createElement('img');
+                        staticMapImg.alt = 'Map showing pickup and destination';
+                        staticMapImg.className = 'booking-map';
+                        staticMapImg.setAttribute('role', 'img');
+                        bookingMapWrap.insertBefore(staticMapImg, bookingMapEl);
+                    }
+                    var q = 'pickup_lat=' + encodeURIComponent(pickupData.lat) + '&pickup_lng=' + encodeURIComponent(pickupData.lng) +
+                        '&dest_lat=' + encodeURIComponent(destinationData.lat) + '&dest_lng=' + encodeURIComponent(destinationData.lng);
+                    staticMapImg.src = API_BASE + '/api/static-map?' + q;
+                    bookingMapWrap.hidden = false;
+                    bookingMapWrap.setAttribute('aria-hidden', 'false');
                 }
             }
 
@@ -1017,6 +1038,98 @@
                 });
             }
 
+            function initWorkerAutocomplete() {
+                var DEBOUNCE_MS = 220;
+                var debounceTimers = { pickup: null, destination: null };
+
+                function renderDropdown(dropdownEl, predictions, onSelect) {
+                    dropdownEl.innerHTML = '';
+                    if (!predictions || predictions.length === 0) {
+                        dropdownEl.setAttribute('aria-hidden', 'true');
+                        return;
+                    }
+                    predictions.forEach(function(p, i) {
+                        var item = document.createElement('div');
+                        item.className = 'autocomplete-item';
+                        item.setAttribute('role', 'option');
+                        item.id = dropdownEl.id + '-item-' + i;
+                        item.textContent = p.description || '';
+                        item.dataset.placeId = p.place_id || '';
+                        item.tabIndex = 0;
+                        item.addEventListener('click', function() { onSelect(p); });
+                        item.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(p); }
+                        });
+                        dropdownEl.appendChild(item);
+                    });
+                    dropdownEl.setAttribute('aria-hidden', 'false');
+                }
+
+                function hideDropdown(dropdownEl) {
+                    dropdownEl.innerHTML = '';
+                    dropdownEl.setAttribute('aria-hidden', 'true');
+                }
+
+                function fetchPlaceDetails(placeId, done) {
+                    fetch(API_BASE + '/api/place-details?place_id=' + encodeURIComponent(placeId))
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) {
+                            if (data && data.lat != null && data.lng != null && data.address) {
+                                done(null, data);
+                            } else {
+                                done(new Error(data && data.error ? data.error : 'Place not found'));
+                            }
+                        })
+                        .catch(function(e) { done(e || new Error('Place details failed')); });
+                }
+
+                function setupInput(inputEl, dropdownEl, isPickup) {
+                    var setData = isPickup ? function(d) { pickupData = d; } : function(d) { destinationData = d; };
+                    var clearData = isPickup ? function() { pickupData = null; } : function() { destinationData = null; };
+                    var showErr = isPickup ? function(m) { showError('pickup', m); } : function(m) { showError('destination', m); };
+
+                    inputEl.addEventListener('input', function() {
+                        var val = (this.value || '').trim();
+                        if (!val) { clearData(); hideDropdown(dropdownEl); updateBookingMap(); return; }
+                        var key = isPickup ? 'pickup' : 'destination';
+                        if (debounceTimers[key]) clearTimeout(debounceTimers[key]);
+                        debounceTimers[key] = setTimeout(function() {
+                            debounceTimers[key] = null;
+                            if (val.length < 2) { hideDropdown(dropdownEl); return; }
+                            fetch(API_BASE + '/api/places-autocomplete?input=' + encodeURIComponent(val))
+                                .then(function(r) { return r.json(); })
+                                .then(function(data) {
+                                    var list = (data && data.predictions) ? data.predictions : [];
+                                    renderDropdown(dropdownEl, list, function(p) {
+                                        hideDropdown(dropdownEl);
+                                        showErr('');
+                                        fetchPlaceDetails(p.place_id, function(err, detail) {
+                                            if (err) {
+                                                showErr(err.message || 'Please select a suggestion from the dropdown.');
+                                                return;
+                                            }
+                                            inputEl.value = detail.address;
+                                            setData({ lat: detail.lat, lng: detail.lng, address: detail.address });
+                                            updateBookingMap();
+                                        });
+                                    });
+                                })
+                                .catch(function() { hideDropdown(dropdownEl); });
+                        }, DEBOUNCE_MS);
+                    });
+
+                    inputEl.addEventListener('blur', function() {
+                        setTimeout(function() { hideDropdown(dropdownEl); }, 180);
+                    });
+                    inputEl.addEventListener('focus', function() {
+                        if (dropdownEl.children.length) dropdownEl.setAttribute('aria-hidden', 'false');
+                    });
+                }
+
+                setupInput(pickupInput, pickupDropdown, true);
+                setupInput(destinationInput, destinationDropdown, false);
+            }
+
             if (GOOGLE_MAPS_API_KEY) {
                 var script = document.createElement('script');
                 script.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(GOOGLE_MAPS_API_KEY) + '&libraries=places&callback=__initBookingGoogleMaps';
@@ -1028,9 +1141,7 @@
                 };
                 document.head.appendChild(script);
             } else {
-                pickupInput.addEventListener('input', function() { if (!this.value.trim()) pickupData = null; });
-                destinationInput.addEventListener('input', function() { if (!this.value.trim()) destinationData = null; });
-                console.warn('Koh Samui Taxi: Set window.__GOOGLE_MAPS_API_KEY (Maps JavaScript API + Places API) for address autocomplete and map.');
+                initWorkerAutocomplete();
             }
 
             var locationBtn = document.querySelector('.booking-location-btn');

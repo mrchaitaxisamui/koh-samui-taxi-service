@@ -101,28 +101,20 @@ var API_BASE = 'https://mrchai-dispatch.<your-subdomain>.workers.dev';
 
 Replace `<your-subdomain>` with your actual Workers subdomain (e.g. `kohsamui-taxi` if your URL is `https://mrchai-dispatch.kohsamui-taxi.workers.dev`).
 
-### 4.2 Google Maps API keys
+### 4.2 Google Maps API key (worker only — key never in frontend)
 
-**Frontend (map + address autocomplete)**  
-The booking form uses the **Google Maps JavaScript API** with the **Places** library for the map and for Google’s native address autocomplete dropdown. Set your key in the frontend before the main script runs, for example in `index.html`:
-
-```html
-<script>window.__GOOGLE_MAPS_API_KEY = 'YOUR_KEY_HERE';</script>
-```
-
-1. In [Google Cloud Console](https://console.cloud.google.com/), enable **Maps JavaScript API** and **Places API**.
-2. Create an API key and (optional) restrict it to your site’s domains (e.g. `https://yourdomain.com/*`).
-3. If the key is not set, the form will show a console message and address autocomplete/map will not work.
-
-**Worker (geocode for “Use my location”)**  
-“Use my location” still uses the worker so the key stays server-side. Set the same or a second key as a Wrangler secret:
+Address autocomplete, “Use my location” geocode, and the booking map image all go through the worker. **Do not put your API key in `index.html`.** Set one key as a Wrangler secret:
 
 ```bash
 npx wrangler secret put GOOGLE_MAPS_API_KEY
 ```
 
-1. Enable **Geocoding API** for the key used by the worker.
-2. For server-side use, do **not** restrict that key to HTTP referrers. You can restrict by IP or leave unrestricted.
+1. In [Google Cloud Console](https://console.cloud.google.com/), create an API key.
+2. Enable **Places API** (autocomplete + place details), **Geocoding API** (“Use my location”), and **Maps Static API** (booking map image).
+3. For server-side use, do **not** restrict the key to HTTP referrers (the worker calls Google from Cloudflare). You can restrict by IP or leave unrestricted.
+
+**Optional: interactive map**  
+If you set `window.__GOOGLE_MAPS_API_KEY` in `index.html`, the booking modal shows an interactive Google Map instead of a static image. Restrict that key to your site’s domains and to **Maps JavaScript API** and **Places API** only so it cannot be abused if copied.
 
 ---
 

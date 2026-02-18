@@ -18,5 +18,5 @@ id = "4873427201684cafbac778dc3c09ba86"
 [vars]
 TELEGRAM_DRIVER_CHAT_ID = "-5178679297"
 # TELEGRAM_BOT_TOKEN must be set as a secret: npx wrangler secret put TELEGRAM_BOT_TOKEN
-# GOOGLE_MAPS_API_KEY (for /api/geocode, /api/places-autocomplete, /api/place-details): npx wrangler secret put GOOGLE_MAPS_API_KEY
+# GOOGLE_MAPS_API_KEY (for /api/geocode, /api/places-autocomplete, /api/place-details, /api/static-map): npx wrangler secret put GOOGLE_MAPS_API_KEY
 # Key must not be restricted to "HTTP referrers" only (Worker calls Google server-side). Use "None" or "IP addresses".
