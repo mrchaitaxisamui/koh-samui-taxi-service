@@ -537,6 +537,101 @@ h1, h2, h3, h4, h5, h6,
     outline: none;
 }
 
+/* Booking modal */
+.booking-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.booking-modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.booking-modal[aria-hidden="true"] {
+    pointer-events: none;
+}
+
+.booking-modal.active[aria-hidden="false"] {
+    pointer-events: auto;
+}
+
+.booking-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+}
+
+.booking-modal-content {
+    position: relative;
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    padding: 0;
+    max-width: 440px;
+    width: 100%;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--color-gray-200);
+}
+
+.booking-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--color-gray-200);
+}
+
+.booking-modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--color-gray-900);
+}
+
+.booking-modal-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--color-gray-600);
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+.booking-modal-close:hover {
+    color: var(--color-gray-900);
+    background: var(--color-gray-100);
+}
+
+.booking-modal .booking-form {
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    padding: 24px;
+    box-shadow: none;
+}
+
+/* Ensure autocomplete dropdown appears above modal content */
+.booking-modal .autocomplete-dropdown {
+    z-index: 10;
+}
+
 /* Loading overlay */
 .loading-overlay {
     position: fixed;
