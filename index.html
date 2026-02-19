@@ -156,11 +156,12 @@
                 <label class="rate-select-wrap">
                     <span class="rate-select-label">From</span>
                     <select id="rate-from" class="rate-select" aria-describedby="rates-subtitle">
-                        <option value="bophut-chaweng">Bophut / Chaweng</option>
+                        <option value="bophut">Bophut</option>
+                        <option value="chaweng">Chaweng</option>
                         <option value="lipanoi">Lipa Noi</option>
-                        <option value="nathon">Nathon</option>
                         <option value="lamai">Lamai</option>
                         <option value="maenam">Maenam</option>
+                        <option value="nathon">Nathon</option>
                         <option value="airport">Airport</option>
                         <option value="chong-mon">Chong Mon</option>
                     </select>
@@ -173,7 +174,8 @@
                         <option value="nathon">Nathon</option>
                         <option value="lamai">Lamai</option>
                         <option value="maenam">Maenam</option>
-                        <option value="bophut-chaweng">Bophut / Chaweng</option>
+                        <option value="chaweng">Chaweng</option>
+                        <option value="bophut">Bophut</option>
                         <option value="airport">Airport</option>
                         <option value="chong-mon">Chong Mon</option>
                     </select>
@@ -795,16 +797,21 @@
             });
         });
 
-        // Dynamic rates: price from Lipa Noi (THB) – used to derive all origin/destination pairs
-        // lat/lng: approximate zone centroids on Koh Samui for mapping address → zone → price
+        // Zone-based fares (THB). Driver location does not affect price—only pickup zone and destination zone.
+        // Each zone has a fareIndex; fare A→B = difference between indices (min STARTING_FEE_BAHT).
+        // Indices reviewed so longer distances cost more across the island (e.g. Bophut→Lamai > Bophut→Chaweng;
+        // Chaweng→Airport > Chaweng→Lamai; Airport→Chaweng > Airport→Bophut; Chong Mon→Chaweng > Chong Mon→Airport).
+        var STARTING_FEE_BAHT = 350;
+        // lat/lng: zone centroids for mapping customer address → zone → price
         var RATE_ZONES = [
-            { id: 'lipanoi',    name: 'Lipa Noi',           baseFromLipanoi: 0,    lat: 9.48, lng: 99.95 },
-            { id: 'nathon',     name: 'Nathon',             baseFromLipanoi: 600,  lat: 9.52, lng: 100.00 },
-            { id: 'lamai',      name: 'Lamai',              baseFromLipanoi: 800,  lat: 9.47, lng: 100.03 },
-            { id: 'maenam',     name: 'Maenam',             baseFromLipanoi: 1000, lat: 9.57, lng: 100.05 },
-            { id: 'bophut-chaweng', name: 'Bophut / Chaweng', baseFromLipanoi: 1100, lat: 9.53, lng: 100.08 },
-            { id: 'airport',    name: 'Airport',            baseFromLipanoi: 1300, lat: 9.54, lng: 100.06 },
-            { id: 'chong-mon',  name: 'Chong Mon',         baseFromLipanoi: 1500, lat: 9.55, lng: 100.10 }
+            { id: 'lipanoi',    name: 'Lipa Noi',           fareIndex: 0,    lat: 9.48, lng: 99.95 },
+            { id: 'nathon',     name: 'Nathon',             fareIndex: 600,  lat: 9.52, lng: 100.00 },
+            { id: 'lamai',      name: 'Lamai',              fareIndex: 700,  lat: 9.47, lng: 100.03 },
+            { id: 'maenam',     name: 'Maenam',             fareIndex: 1000, lat: 9.57, lng: 100.05 },
+            { id: 'bophut',     name: 'Bophut',             fareIndex: 1100, lat: 9.54, lng: 100.08 },
+            { id: 'chaweng',    name: 'Chaweng',            fareIndex: 950,  lat: 9.52, lng: 100.07 },
+            { id: 'airport',    name: 'Airport',            fareIndex: 1350, lat: 9.54, lng: 100.06 },
+            { id: 'chong-mon',  name: 'Chong Mon',         fareIndex: 1500, lat: 9.55, lng: 100.10 }
         ];
         var zoneById = {};
         RATE_ZONES.forEach(function(z) { zoneById[z.id] = z; });
@@ -824,7 +831,8 @@
             var from = zoneById[fromId], to = zoneById[toId];
             if (!from || !to) return null;
             if (fromId === toId) return 0;
-            return Math.abs(from.baseFromLipanoi - to.baseFromLipanoi);
+            var zoneFare = Math.abs(from.fareIndex - to.fareIndex);
+            return Math.max(STARTING_FEE_BAHT, zoneFare);
         }
 
         function formatPrice(baht) {
