@@ -57,7 +57,7 @@ Driver phone numbers are **not** sent by Telegram when a driver accepts. We use 
 | Driver | Telegram ID | Phone | Status |
 |--------|-------------|-------|--------|
 | 1 | 5391534676 | +66 82 424 5439 | Configured in `wrangler.toml` |
-| 2 | — | — | Pending: have driver accept a ride so ID appears in group, then add ID + phone to `DRIVER_PHONES` |
+| 2 | 8322068507 | +66 82 424 5439 | Configured in `wrangler.toml` |
 | 3 | — | — | Pending: have driver accept a ride so ID appears in group, then add ID + phone to `DRIVER_PHONES` |
 
 With `SHOW_DRIVER_ID = "1"`, when driver 2 or 3 accepts a ride, the group message will show their ID (e.g. `(ID: 123456789)`). Add each to `DRIVER_PHONES` in the same format as driver 1, then set `SHOW_DRIVER_ID = "0"` and redeploy.
