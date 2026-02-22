@@ -1,0 +1,6 @@
+# https://mrchaitaxi.com – Koh Samui Taxi by Mr Chai
+User-agent: *
+Allow: /
+
+# Sitemap helps Google discover and index your pages
+Sitemap: https://mrchaitaxi.com/sitemap.xml

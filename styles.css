@@ -186,6 +186,17 @@ h1, h2, h3, h4, h5, h6,
     border-radius: var(--radius-lg);
 }
 
+/* Lucide icons: SVG fills container and inherits color */
+[data-lucide] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+[data-lucide] svg {
+    width: 100%;
+    height: 100%;
+}
+
 .arrow-icon {
     width: 18px;
     height: 18px;
@@ -525,6 +536,11 @@ h1, h2, h3, h4, h5, h6,
     outline: none;
 }
 
+.location-btn-icon {
+    width: 20px;
+    height: 20px;
+}
+
 .booking-location-btn:disabled {
     cursor: not-allowed;
     opacity: 0.7;
@@ -654,6 +670,11 @@ h1, h2, h3, h4, h5, h6,
     font-weight: 700;
     margin: 0;
     color: var(--color-gray-900);
+}
+
+.modal-close-icon {
+    width: 24px;
+    height: 24px;
 }
 
 .booking-modal-close {
@@ -822,6 +843,13 @@ h1, h2, h3, h4, h5, h6,
     line-height: 52px;
     text-align: center;
     border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ride-confirmed-icon svg {
+    width: 28px;
+    height: 28px;
 }
 
 .ride-confirmed-title {
@@ -1002,6 +1030,7 @@ h1, h2, h3, h4, h5, h6,
     transition: var(--transition);
 }
 
+.service-link .service-link-icon,
 .service-link svg {
     width: 16px;
     height: 16px;
@@ -1012,6 +1041,7 @@ h1, h2, h3, h4, h5, h6,
     border-bottom-color: var(--color-black);
 }
 
+.service-link:hover .service-link-icon,
 .service-link:hover svg {
     transform: translateX(4px);
 }
@@ -1065,6 +1095,7 @@ h1, h2, h3, h4, h5, h6,
     font-weight: 500;
 }
 
+.feature-item .feature-check-icon,
 .feature-item svg {
     width: 20px;
     height: 20px;
@@ -2459,6 +2490,10 @@ h1, h2, h3, h4, h5, h6,
     justify-content: center;
     line-height: 1;
 }
+.confirmation-check svg {
+    width: 32px;
+    height: 32px;
+}
 
 .confirmation-title {
     font-size: 24px;
@@ -2650,6 +2685,11 @@ h1, h2, h3, h4, h5, h6,
     font-size: 24px;
     flex-shrink: 0;
 }
+.confirmation-eta-icon [data-lucide],
+.confirmation-eta-icon svg {
+    width: 24px;
+    height: 24px;
+}
 
 .confirmation-eta-label {
     font-size: 12px;
@@ -2756,6 +2796,10 @@ h1, h2, h3, h4, h5, h6,
     display: flex;
     align-items: center;
     justify-content: center;
+}
+.confirmation-error-icon svg {
+    width: 28px;
+    height: 28px;
 }
 
 .confirmation-error-title {
