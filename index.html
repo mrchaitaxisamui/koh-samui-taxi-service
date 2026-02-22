@@ -10,6 +10,40 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Uber+Move:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Booking: address autocomplete via worker (key server-side). Optional window.__GOOGLE_MAPS_API_KEY for interactive map. -->
+    <!-- LocalBusiness + opening hours for search engines and rich results -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TaxiService",
+      "name": "Mr Chai Taxi Service",
+      "description": "Reliable Koh Samui taxi and shuttle service. Upfront prices, 24/7 airport transfers, and spacious vans across the island.",
+      "url": "https://mrchaitaxi.com",
+      "telephone": "+66824245439",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Koh Samui",
+        "addressRegion": "Surat Thani",
+        "addressCountry": "TH"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 9.4804763,
+        "longitude": 99.9272204
+      },
+      "hasMap": "https://www.google.com/maps/@9.4804763,99.9272204,17z",
+      "areaServed": {
+        "@type": "GeoCircle",
+        "geoMidpoint": { "@type": "GeoCoordinates", "latitude": 9.5357, "longitude": 100.0629 },
+        "geoRadius": "25000"
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+        "opens": "00:00",
+        "closes": "23:59"
+      }
+    }
+    </script>
 </head>
 <body>
     <!-- Navigation -->
@@ -80,7 +114,7 @@
                     </a>
                 </div>
 
-                <p class="hero-note">Available 24/7 across Koh Samui</p>
+                <p class="hero-note">Open 24 hours, Monday–Sunday across Koh Samui</p>
             </div>
             <div class="hero-image">
                 <div id="hero-lottie" class="hero-lottie" aria-hidden="true"></div>
@@ -582,11 +616,17 @@
                     <a href="https://wa.me/66824245439" target="_blank" rel="noopener noreferrer">WhatsApp</a>
                     <a href="#faq">FAQ</a>
                 </div>
+                <div class="footer-column">
+                    <h4>Opening hours</h4>
+                    <p class="footer-opening-hours">Monday–Sunday: 24 hours</p>
+                </div>
             </div>
             
             <div class="footer-bottom">
                 <p>&copy; 2024 Mr Chai Van Service Samui</p>
-                <p class="footer-location">Koh Samui, Thailand</p>
+                <p class="footer-location">
+                    <a href="https://www.google.com/maps/@9.4804763,99.9272204,17z" target="_blank" rel="noopener noreferrer">Our office: 9°28′49.7″N 99°55′55.5″E, Koh Samui, Thailand</a>
+                </p>
             </div>
         </div>
     </footer>
