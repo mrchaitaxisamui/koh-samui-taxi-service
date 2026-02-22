@@ -364,12 +364,19 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .usp-wrapper {
-    /* 5 items = 20s total (4s per item) */
+    display: flex;
+    flex-direction: column;
+    /* 5 items = 20s total (4s per item); only one item visible at a time */
     animation: usp-slide 20s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 }
 
 .usp-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     height: 40px;
+    flex-shrink: 0;
     line-height: 40px;
     font-size: 13px;
     font-weight: 600;
@@ -377,6 +384,32 @@ h1, h2, h3, h4, h5, h6,
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+}
+
+.usp-item-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    color: var(--color-gray-600);
+}
+
+.usp-item-text:empty {
+    display: none;
+}
+
+/* Hide empty USP items so they don't show a blank line */
+.usp-item:empty,
+.usp-item:not(:has(.usp-item-text)) {
+    display: none;
+}
+
+/* When entire USP banner is hidden (no visible items), hero uses navbar-only padding */
+.usp-banner.usp-banner--hidden {
+    display: none;
+}
+
+body.usp-banner-hidden .hero {
+    padding-top: 64px !important;
 }
 
 /* Update Hero Padding to account for the new banner */
@@ -390,7 +423,7 @@ h1, h2, h3, h4, h5, h6,
     40%, 55% { transform: translateY(-80px); }
     60%, 75% { transform: translateY(-120px); }
     80%, 95% { transform: translateY(-160px); }
-    100% { transform: translateY(-200px); }
+    100% { transform: translateY(0); }
 }
 
 /* Adjust for Mobile */

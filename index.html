@@ -100,11 +100,10 @@
     <div class="usp-banner" aria-live="polite">
         <div class="usp-container-fixed">
             <div class="usp-wrapper">
-                <div class="usp-item">No getting stuck—reliable pickups, every time</div>
-                <div class="usp-item">Know your price before you go—no haggling on vacation</div>
-                <div class="usp-item">No-show? Not us. 24/7 across the island</div>
-                <div class="usp-item">One clear rate per route—no overpaying, no surprises</div>
-                <div class="usp-item">Peace of mind from airport to beach and back</div>
+                <div class="usp-item"><i data-lucide="zap" class="usp-item-icon" aria-hidden="true"></i><span class="usp-item-text">Fast pick up</span></div>
+                <div class="usp-item"><i data-lucide="receipt" class="usp-item-icon" aria-hidden="true"></i><span class="usp-item-text">No hidden fees</span></div>
+                <div class="usp-item"><i data-lucide="tag" class="usp-item-icon" aria-hidden="true"></i><span class="usp-item-text">Transparent pricing</span></div>
+                <div class="usp-item"><i data-lucide="shield-check" class="usp-item-icon" aria-hidden="true"></i><span class="usp-item-text">Certified Driver</span></div>
             </div>
         </div>
     </div>
@@ -719,6 +718,31 @@
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <script>
         (function() { if (typeof lucide !== 'undefined') lucide.createIcons(); })();
+    </script>
+    <script>
+        // USP banner: remove empty items and hide banner if none left
+        (function initUspBanner() {
+            function run() {
+                var banner = document.querySelector('.usp-banner');
+                var wrapper = banner && banner.querySelector('.usp-wrapper');
+                if (!wrapper) return;
+                var items = wrapper.querySelectorAll('.usp-item');
+                items.forEach(function(el) {
+                    var text = (el.textContent || '').trim();
+                    if (text.length === 0) el.remove();
+                });
+                var remaining = wrapper.querySelectorAll('.usp-item');
+                if (remaining.length === 0) {
+                    banner.classList.add('usp-banner--hidden');
+                    document.body.classList.add('usp-banner-hidden');
+                }
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', run);
+            } else {
+                run();
+            }
+        })();
     </script>
     <script src="https://unpkg.com/libphonenumber-js@1/bundle/libphonenumber-min.js"></script>
     <!-- Optional: set window.__GOOGLE_MAPS_API_KEY for interactive map. Autocomplete uses worker (key server-side). -->
