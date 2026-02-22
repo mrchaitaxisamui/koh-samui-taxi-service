@@ -871,7 +871,7 @@
         function getRate(fromId, toId) {
             var from = zoneById[fromId], to = zoneById[toId];
             if (!from || !to) return null;
-            if (fromId === toId) return 0;
+            if (fromId === toId) return STARTING_FEE_BAHT;
             var zoneFare = Math.abs(from.fareIndex - to.fareIndex);
             return Math.max(STARTING_FEE_BAHT, zoneFare);
         }

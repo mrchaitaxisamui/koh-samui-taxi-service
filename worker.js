@@ -384,8 +384,9 @@ async function handleRideRequest(request, env, ctx) {
   const pickupAddress = pickup.address || `${pickupLat.toFixed(5)}, ${pickupLng.toFixed(5)}`;
   const destAddress = destination.address || `${destLat.toFixed(5)}, ${destLng.toFixed(5)}`;
 
+  const MIN_FARE_THB = 350;
   const priceThb = typeof estimatedPrice === 'number' && Number.isFinite(estimatedPrice) && estimatedPrice >= 0
-    ? estimatedPrice
+    ? Math.max(MIN_FARE_THB, estimatedPrice)
     : null;
   const ride = {
     rideId,
